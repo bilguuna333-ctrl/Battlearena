@@ -1,0 +1,660 @@
+# FULL AI PROMPT — Монгол HackerRank + Codeforces + 1v1 Battle Platform
+
+Create a complete modern full-stack coding platform similar to:
+
+* HackerRank
+* LeetCode
+* Codeforces
+* Chess.com ranked system
+* Valorant competitive matchmaking
+
+Project name:
+“CodeSteppe”
+
+Main language:
+
+* Entire website MUST use Mongolian language
+* All UI texts, buttons, labels, problems, errors, notifications, rankings, battles, and admin panels must be Mongolian
+
+---
+
+## TECH STACK
+
+Frontend:
+
+* Next.js latest
+* TypeScript
+* TailwindCSS
+* shadcn/ui
+* Framer Motion
+* Zustand
+* Socket.IO client
+* Monaco Editor
+
+Backend:
+
+* Node.js
+* NestJS
+* Prisma ORM
+* MySQL
+* Redis
+* BullMQ
+* Socket.IO
+* JWT authentication
+
+Infrastructure:
+
+* Docker
+* Docker Compose
+* Nginx
+* Production-ready architecture
+
+---
+
+## CORE PLATFORM IDEA
+
+Build a professional coding competition platform where:
+
+* Users solve programming problems
+* Users gain XP
+* Users gain ELO
+* Users battle in real-time 1v1 coding matches
+* Companies can create private coding tasks
+* Admins manage the platform
+
+The website must feel:
+
+* Competitive
+* Modern
+* Gaming-inspired
+* Real-time
+* Fast
+* Beautiful
+
+---
+
+## AUTHENTICATION SYSTEM
+
+Implement:
+
+* Register
+* Login
+* Logout
+* Email verification
+* Forgot password
+* Reset password
+* JWT access token
+* Refresh token
+* Secure cookie handling
+* Optional Google OAuth
+
+User roles:
+
+* USER
+* ADMIN
+* COMPANY_OWNER
+* COMPANY_MANAGER
+
+---
+
+## USER PROFILE SYSTEM
+
+Each user profile contains:
+
+* Монгол нэр
+* Username
+* Avatar
+* Bio
+* XP
+* ELO
+* Rank
+* Highest rank
+* Win streak
+* Battle history
+* Solved problems
+* Favorite programming language
+* Statistics charts
+* Achievement badges
+
+---
+
+## PROBLEM SYSTEM
+
+Coding problems similar to HackerRank.
+
+Problem fields:
+
+* title
+* slug
+* difficulty
+* statement
+* inputDescription
+* outputDescription
+* constraints
+* examples
+* hiddenTestCases
+* publicTestCases
+* tags
+* xpReward
+* eloReward
+* timeLimit
+* memoryLimit
+
+Difficulty levels:
+
+* Хялбар
+* Дунд
+* Хэцүү
+* Мэргэжлийн
+
+Supported languages:
+
+* JavaScript
+* TypeScript
+* Python
+* Java
+* C++
+* Go
+
+---
+
+## MONGOLIAN PROBLEM REQUIREMENT
+
+All coding problems MUST be Mongolian.
+
+Example:
+
+Title:
+“2 тооны нийлбэр”
+
+Statement:
+“Өгөгдсөн 2 бүхэл тооны нийлбэрийг ол.”
+
+Input:
+“2 бүхэл тоо өгөгдөнө.”
+
+Output:
+“Нийлбэрийг хэвлэ.”
+
+Example Input:
+2 3
+
+Example Output:
+5
+
+Generate at least:
+
+* 50 sample Mongolian problems
+* Different difficulties
+* Algorithms
+* Arrays
+* Strings
+* Math
+* Graphs
+* Dynamic Programming
+
+---
+
+## ONLINE CODE EDITOR
+
+Build advanced online IDE.
+
+Features:
+
+* Monaco Editor
+* Syntax highlighting
+* Auto-save
+* Run code
+* Submit code
+* Dark mode
+* Terminal output
+* Test case viewer
+* Line numbers
+* Keyboard shortcuts
+* Fullscreen mode
+
+---
+
+## CODE EXECUTION SYSTEM
+
+Implement secure sandbox code execution.
+
+Requirements:
+
+* Every submission runs in isolated Docker container
+* CPU limit
+* Memory limit
+* Timeout protection
+* Network disabled
+* Prevent malicious code
+* Queue execution using Redis + BullMQ
+* Async worker architecture
+
+Execution flow:
+User submits code
+→ Queue created
+→ Worker picks job
+→ Docker sandbox runs code
+→ Test cases checked
+→ Result returned
+
+Submission results:
+
+* Accepted
+* Wrong Answer
+* Time Limit Exceeded
+* Runtime Error
+* Compilation Error
+* Memory Limit Exceeded
+
+---
+
+## XP SYSTEM
+
+Users gain XP by:
+
+* Solving problems
+* Winning battles
+* Daily streaks
+* Participating contests
+
+XP affects:
+
+* User level
+* Badges
+* Ranking visuals
+
+---
+
+## ELO RANKING SYSTEM
+
+Add advanced ELO competitive system.
+
+Each user has:
+
+* eloRating
+* battleWins
+* battleLosses
+* winRate
+* currentRank
+* highestRank
+
+Starting ELO:
+
+* 1000
+
+Use standard ELO formula.
+
+Rules:
+
+* Defeating stronger opponents gives more ELO
+* Losing against weaker opponents removes more ELO
+* Draw gives small ELO change
+
+Rank tiers:
+
+* 0–899 → Шинэхэн
+* 900–1199 → Сурагч
+* 1200–1499 → Кодчин
+* 1500–1799 → Ахисан
+* 1800–2099 → Мастер
+* 2100+ → Домог
+
+---
+
+## 1V1 LIVE CODING BATTLE
+
+Build real-time coding battle system.
+
+Features:
+
+* Matchmaking
+* Random opponent
+* Invite friend
+* Real-time timer
+* Live progress tracking
+* WebSocket communication
+* Battle chat
+* ELO rewards
+* XP rewards
+* Animated result screen
+
+Battle flow:
+
+1. User joins queue
+2. Matchmaking finds similar ELO opponent
+3. Same problem assigned
+4. Countdown begins
+5. First correct solution wins
+6. ELO updated instantly
+
+Win conditions:
+
+1. First correct solution wins
+2. Faster submission wins if both solve
+3. Most passed test cases wins
+4. Draw possible
+
+---
+
+## MATCHMAKING SYSTEM
+
+Requirements:
+
+* Match users by similar ELO
+* Expand search range gradually
+* Queue cancellation
+* Match acceptance popup
+* Timeout handling
+
+Queue states:
+
+* Searching
+* Match Found
+* Accepted
+* In Battle
+* Finished
+
+---
+
+## REAL-TIME SYSTEM
+
+Use Socket.IO / WebSocket for:
+
+* Battles
+* Matchmaking
+* Queue updates
+* Live submissions
+* Online users
+* Notifications
+* Chat
+* Leaderboard updates
+
+---
+
+## LEADERBOARD SYSTEM
+
+Global ranking sorted by:
+
+* ELO
+* XP
+* Win rate
+* Total wins
+* Current streak
+
+Add:
+
+* Top 100
+* Weekly ranking
+* Monthly ranking
+* Seasonal ranking
+
+---
+
+## SEASON SYSTEM
+
+Implement competitive seasons.
+
+Features:
+
+* Seasonal reset
+* Seasonal badges
+* Rewards
+* Rank history
+
+Example:
+
+* Season 1 Champion
+
+---
+
+## ACHIEVEMENT SYSTEM
+
+Add badges:
+
+* 10 wins
+* 100 solved problems
+* 5 win streak
+* First battle win
+* Contest winner
+* Legendary rank
+
+---
+
+## CONTEST SYSTEM
+
+Admins and companies can host contests.
+
+Features:
+
+* Contest timer
+* Multiple problems
+* Live standings
+* Private contests
+* Public contests
+* Team contests
+
+---
+
+## COMPANY SYSTEM
+
+Multi-tenant company architecture.
+
+Companies can:
+
+* Create private coding tasks
+* Invite developers
+* Track developer performance
+* Organize private battles
+* Create hiring challenges
+
+Requirements:
+
+* Company data isolation
+* Separate dashboards
+* Privacy protection
+
+---
+
+## ADMIN PANEL
+
+Admins can:
+
+* Create problems
+* Edit problems
+* Delete problems
+* Ban users
+* Manage contests
+* Manage battles
+* View analytics
+* Moderate reports
+
+---
+
+## ANTI-CHEAT SYSTEM
+
+Implement:
+
+* Submission cooldown
+* Copy-paste detection
+* Suspicious code similarity detection
+* WebSocket validation
+* Prevent tampering
+* IP monitoring
+* Secure sandboxing
+
+---
+
+## DATABASE DESIGN
+
+Generate full Prisma schema with relations.
+
+Models:
+
+* User
+* Problem
+* Submission
+* Battle
+* BattleResult
+* MatchQueue
+* Contest
+* ContestParticipant
+* Company
+* Notification
+* ChatMessage
+* Achievement
+* XPHistory
+* EloHistory
+* Season
+* RankReward
+
+Use:
+
+* Proper indexing
+* Scalable relations
+* UUID ids
+
+---
+
+## SECURITY
+
+Implement:
+
+* Helmet
+* CORS
+* Rate limiting
+* JWT security
+* SQL injection prevention
+* XSS protection
+* CSRF protection
+* Docker isolation
+
+---
+
+## UI / UX DESIGN
+
+Design inspiration:
+
+* HackerRank
+* Codeforces
+* Valorant
+* Discord
+* League of Legends
+
+Style:
+
+* Dark futuristic theme
+* Neon glow
+* Glassmorphism
+* Gaming atmosphere
+* Smooth animations
+* Beautiful leaderboard
+* Animated rank cards
+* Cyberpunk feeling
+
+Add:
+
+* Skeleton loaders
+* Toast notifications
+* Animated charts
+* XP animations
+* Rank-up animations
+* Battle victory animations
+
+---
+
+## PAGES
+
+Required pages:
+
+* Home
+* Login
+* Register
+* Problems
+* Problem Details
+* Online IDE
+* Rankings
+* Battles
+* Queue Screen
+* Battle Screen
+* User Profile
+* Company Dashboard
+* Contest Page
+* Admin Dashboard
+* Settings
+
+---
+
+## MONGOLIAN UI TEXT EXAMPLES
+
+Login → Нэвтрэх
+Register → Бүртгүүлэх
+Problems → Бодлогууд
+Battle → Тулаан
+Leaderboard → Чансаа
+Victory → Ялалт
+Defeat → Ялагдал
+Draw → Тэнцээ
+Searching opponent → Өрсөлдөгч хайж байна
+Match found → Өрсөлдөгч олдлоо
+Run Code → Код ажиллуулах
+Submit → Илгээх
+Accepted → Зөв хариулт
+Wrong Answer → Буруу хариулт
+
+---
+
+## DEVOPS
+
+Generate:
+
+* Dockerfiles
+* Docker Compose
+* Nginx config
+* Production environment setup
+* CI/CD example
+* Redis worker setup
+
+Services:
+
+* frontend
+* backend
+* mysql
+* redis
+* websocket
+* code-runner
+
+---
+
+## ARCHITECTURE REQUIREMENTS
+
+Use:
+
+* Clean Architecture
+* Modular architecture
+* Reusable components
+* Service-based backend
+* Scalable folder structure
+
+---
+
+## FINAL REQUIREMENTS
+
+Generate:
+
+* Complete frontend
+* Complete backend
+* Prisma schema
+* REST APIs
+* WebSocket gateways
+* Docker setup
+* Seed data
+* Mongolian sample problems
+* Authentication system
+* Battle system
+* Matchmaking
+* Leaderboard
+* Production-ready structure
+
+The final product must feel like:
+“HackerRank + Codeforces + Valorant competitive system built for Mongolia.”
