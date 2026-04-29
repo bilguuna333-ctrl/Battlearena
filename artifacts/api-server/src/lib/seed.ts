@@ -2,6 +2,7 @@ import { db, problemsTable, seasonsTable, usersTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { SEED_PROBLEMS } from "./seed-problems";
 import { hashPassword } from "./auth";
+import { seedExtras } from "./seed-extras";
 
 const SAMPLE_USERS = [
   { username: "altanbat", displayName: "Алтанбат", elo: 2350, wins: 84, losses: 18, streak: 7, lang: "C++" },
@@ -107,4 +108,6 @@ export async function seedDatabase(): Promise<void> {
       champion_user_id: 1,
     });
   }
+
+  await seedExtras();
 }

@@ -6,10 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { OpponentSummary } from "./opponentSummary";
+import type { QueueStatusMode } from "./queueStatusMode";
 import type { QueueStatusState } from "./queueStatusState";
 
 export interface QueueStatus {
   state: QueueStatusState;
+  /** @nullable */
+  mode?: QueueStatusMode;
   secondsInQueue: number;
   searchRange: number;
   /** @nullable */

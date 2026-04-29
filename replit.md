@@ -14,8 +14,8 @@ Mongolian (Cyrillic) competitive 1v1 coding battle platform with ELO ranking, ma
 - `artifacts/mockup-sandbox` — design preview server (template).
 
 ### Libraries
-- `lib/db` — Drizzle schemas (users, sessions, problems, submissions, battles, battleChat, eloHistory, matchQueue, seasons).
-- `lib/api-spec` — OpenAPI spec + Orval codegen.
+- `lib/db` — Drizzle schemas (users, sessions, problems, submissions, battles, battleChat, eloHistory, matchQueue, seasons, replays, missions, friendships, follows, dms, notifications, mentor groups/assignments, hiring challenges/applications, bosses/bossFights).
+- `lib/api-spec` — OpenAPI spec + Orval codegen (1826 lines).
 - `lib/api-client-react` — generated TanStack Query hooks.
 
 ### Backend lib
@@ -23,12 +23,24 @@ Mongolian (Cyrillic) competitive 1v1 coding battle platform with ELO ranking, ma
 - `lib/auth.ts` — scrypt password hashing + Bearer token sessions.
 - `lib/runner.ts` — vm-based JS sandbox (Python returns "not supported" stub).
 - `lib/matchmaking.ts` — expanding ELO range matchmaker.
-- `lib/seed.ts` / `lib/seed-problems.ts` — 12 sample users (pw `password123`), 20 Mongolian problems, 2 seasons.
+- `lib/seed.ts` / `lib/seed-problems.ts` / `lib/seed-extras.ts` — 12 sample users (pw `password123`), 20 Mongolian problems, 2 seasons, missions, mentor groups, hiring challenges, bosses, replays, social graph.
+
+### Advanced systems (MVP)
+- Replays — event timeline (`t, type, userId, code?, passed?, total?, message?`); player‑split scrubber UI.
+- Modes — Ranked / Normal / Practice via `JoinQueueInput.mode`.
+- Missions — daily + weekly with progress and claim.
+- Social — friends (object: `{friends, incoming, outgoing}`), follow, DMs, notifications popover, activity feed.
+- Mentor groups — `isMentor` boolean; assignments use `problemSlug`.
+- Hiring Arena — challenges + applications.
+- Boss Battle — Monaco editor + HP bars; `BossAttackInputLanguage` ∈ {javascript, python}; `BossDetail.problems[]` (no `problemCount`).
+- Analytics — Recharts dashboard at `/analytics`.
+- i18n (`lib/i18n.ts`) — mn default, en toggle in navbar; `useT()` / `useLang()` / `setLang()`.
 
 ### Conventions
 - Auth token stored in `localStorage["codesteppe_token"]`, sent as `Authorization: Bearer …` by the generated client's custom-fetch.
 - Default ELO 1000. Rank tiers: Шинэхэн <900, Сурагч 900–1199, Кодчин 1200–1499, Ахисан 1500–1799, Мастер 1800–2099, Домог 2100+.
 - Submission cooldown 3s. Match accept window 15s.
-- Polling instead of WebSocket (queue/status, battle/state).
+- Polling instead of WebSocket (queue/status, battle/state, conversations, active boss fight).
 - wouter v3: `<Link>` renders its own `<a>` — pass `className` and children directly, never nest `<a>` inside.
-- Orval-generated `useQuery` hooks require an explicit `queryKey` in the `query` options object.
+- Orval-generated `useQuery` hooks require an explicit `queryKey` in the `query` options object (use the `getXxxQueryKey()` helpers).
+- Generated mutation hooks expect args wrapped: `mutate({ id, data: {...} })` — not flat fields.

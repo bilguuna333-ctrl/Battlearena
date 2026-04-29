@@ -34,12 +34,14 @@ export async function tryFindMatch(
       eloAtJoin: matchQueueTable.eloAtJoin,
       state: matchQueueTable.state,
       joinedAt: matchQueueTable.joinedAt,
+      mode: matchQueueTable.mode,
     })
     .from(matchQueueTable)
     .where(
       and(
         eq(matchQueueTable.state, "searching"),
         ne(matchQueueTable.userId, userId),
+        eq(matchQueueTable.mode, me.mode),
         sql`${matchQueueTable.eloAtJoin} BETWEEN ${lower} AND ${upper}`,
       ),
     );
@@ -144,16 +146,21 @@ export async function tryStartBattleIfBothAccepted(
   if (!problemId) return null;
 
   const battleId = crypto.randomUUID();
+  const battleMode = u1.mode ?? "ranked";
   await db.insert(battlesTable).values({
     id: battleId,
     problemId,
     player1Id: user1.id,
     player2Id: user2.id,
     state: "in_battle",
+    mode: battleMode,
     player1EloBefore: user1.eloRating,
     player2EloBefore: user2.eloRating,
     startedAt: new Date(),
   });
+  // Initialize replay
+  const { ensureReplay } = await import("./replays");
+  await ensureReplay(battleId, problemId, user1.id, user2.id);
 
   await db
     .update(matchQueueTable)

@@ -42,6 +42,9 @@ export const RegisterResponse = zod.object({
     eloRating: zod.number(),
     highestElo: zod.number(),
     xp: zod.number(),
+    coins: zod.number(),
+    language: zod.string(),
+    title: zod.string().nullish(),
     battleWins: zod.number(),
     battleLosses: zod.number(),
     battleDraws: zod.number(),
@@ -69,6 +72,9 @@ export const LoginResponse = zod.object({
     eloRating: zod.number(),
     highestElo: zod.number(),
     xp: zod.number(),
+    coins: zod.number(),
+    language: zod.string(),
+    title: zod.string().nullish(),
     battleWins: zod.number(),
     battleLosses: zod.number(),
     battleDraws: zod.number(),
@@ -93,6 +99,9 @@ export const GetMeResponse = zod.object({
   eloRating: zod.number(),
   highestElo: zod.number(),
   xp: zod.number(),
+  coins: zod.number(),
+  language: zod.string(),
+  title: zod.string().nullish(),
   battleWins: zod.number(),
   battleLosses: zod.number(),
   battleDraws: zod.number(),
@@ -279,6 +288,14 @@ export const GetRecentSubmissionsResponse = zod.array(
   GetRecentSubmissionsResponseItem,
 );
 
+export const joinQueueBodyModeDefault = `ranked`;
+
+export const JoinQueueBody = zod.object({
+  mode: zod
+    .enum(["ranked", "normal", "practice"])
+    .default(joinQueueBodyModeDefault),
+});
+
 export const JoinQueueResponse = zod.object({
   state: zod.enum([
     "idle",
@@ -288,6 +305,14 @@ export const JoinQueueResponse = zod.object({
     "in_battle",
     "finished",
   ]),
+  mode: zod
+    .union([
+      zod.literal("ranked"),
+      zod.literal("normal"),
+      zod.literal("practice"),
+      zod.literal(null),
+    ])
+    .nullish(),
   secondsInQueue: zod.number(),
   searchRange: zod.number(),
   matchId: zod.string().nullish(),
@@ -322,6 +347,14 @@ export const GetQueueStatusResponse = zod.object({
     "in_battle",
     "finished",
   ]),
+  mode: zod
+    .union([
+      zod.literal("ranked"),
+      zod.literal("normal"),
+      zod.literal("practice"),
+      zod.literal(null),
+    ])
+    .nullish(),
   secondsInQueue: zod.number(),
   searchRange: zod.number(),
   matchId: zod.string().nullish(),
@@ -357,6 +390,14 @@ export const AcceptMatchResponse = zod.object({
     "in_battle",
     "finished",
   ]),
+  mode: zod
+    .union([
+      zod.literal("ranked"),
+      zod.literal("normal"),
+      zod.literal("practice"),
+      zod.literal(null),
+    ])
+    .nullish(),
   secondsInQueue: zod.number(),
   searchRange: zod.number(),
   matchId: zod.string().nullish(),
@@ -567,3 +608,831 @@ export const ListSeasonsResponseItem = zod.object({
     .optional(),
 });
 export const ListSeasonsResponse = zod.array(ListSeasonsResponseItem);
+
+export const SetLanguageBody = zod.object({
+  language: zod.enum(["mn", "en"]),
+});
+
+export const SetLanguageResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const GetReplayParams = zod.object({
+  battleId: zod.coerce.string(),
+});
+
+export const GetReplayResponse = zod.object({
+  battleId: zod.string(),
+  problemId: zod.number(),
+  problemTitle: zod.string(),
+  durationMs: zod.number(),
+  players: zod.array(
+    zod.object({
+      userId: zod.number(),
+      username: zod.string(),
+      displayName: zod.string(),
+      avatarSeed: zod.string().nullish(),
+      eloBefore: zod.number(),
+      eloAfter: zod.number().nullable(),
+      finalPassed: zod.number(),
+    }),
+  ),
+  events: zod.array(
+    zod.object({
+      t: zod.number(),
+      type: zod.enum(["code", "submission", "chat", "finish"]),
+      userId: zod.number(),
+      code: zod.string().nullish(),
+      passed: zod.number().nullish(),
+      total: zod.number().nullish(),
+      message: zod.string().nullish(),
+    }),
+  ),
+});
+
+export const GetMyMissionsResponseItem = zod.object({
+  id: zod.number(),
+  slug: zod.string(),
+  title: zod.string(),
+  description: zod.string(),
+  period: zod.enum(["daily", "weekly"]),
+  goalCount: zod.number(),
+  progress: zod.number(),
+  claimed: zod.boolean(),
+  rewardXp: zod.number(),
+  rewardCoins: zod.number(),
+  rewardBadge: zod.string().nullish(),
+  icon: zod.string(),
+  periodKey: zod.string(),
+  percent: zod.number(),
+});
+export const GetMyMissionsResponse = zod.array(GetMyMissionsResponseItem);
+
+export const ClaimMissionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ClaimMissionResponse = zod.object({
+  ok: zod.boolean(),
+  xpGained: zod.number(),
+  coinsGained: zod.number(),
+  badge: zod.string().nullish(),
+  totalXp: zod.number(),
+  totalCoins: zod.number(),
+});
+
+export const GetActivityFeedQueryParams = zod.object({
+  scope: zod.enum(["global", "following"]).optional(),
+});
+
+export const GetActivityFeedResponseItem = zod.object({
+  id: zod.number(),
+  username: zod.string(),
+  displayName: zod.string(),
+  avatarSeed: zod.string().nullish(),
+  type: zod.string(),
+  payload: zod.record(zod.string(), zod.unknown()),
+  createdAt: zod.coerce.date(),
+});
+export const GetActivityFeedResponse = zod.array(GetActivityFeedResponseItem);
+
+export const FollowUserBody = zod.object({
+  username: zod.string(),
+});
+
+export const FollowUserResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const UnfollowUserBody = zod.object({
+  username: zod.string(),
+});
+
+export const UnfollowUserResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const GetFriendsResponse = zod.object({
+  friends: zod.array(
+    zod.object({
+      username: zod.string(),
+      displayName: zod.string(),
+      avatarSeed: zod.string().nullish(),
+      eloRating: zod.number(),
+      rank: zod.string(),
+      title: zod.string().nullish(),
+    }),
+  ),
+  incoming: zod.array(
+    zod.object({
+      username: zod.string(),
+      displayName: zod.string(),
+      avatarSeed: zod.string().nullish(),
+      eloRating: zod.number(),
+      rank: zod.string(),
+      title: zod.string().nullish(),
+    }),
+  ),
+  outgoing: zod.array(
+    zod.object({
+      username: zod.string(),
+      displayName: zod.string(),
+      avatarSeed: zod.string().nullish(),
+      eloRating: zod.number(),
+      rank: zod.string(),
+      title: zod.string().nullish(),
+    }),
+  ),
+});
+
+export const SendFriendRequestBody = zod.object({
+  username: zod.string(),
+});
+
+export const SendFriendRequestResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const AcceptFriendRequestBody = zod.object({
+  username: zod.string(),
+});
+
+export const AcceptFriendRequestResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const GetConversationParams = zod.object({
+  username: zod.coerce.string(),
+});
+
+export const GetConversationResponseItem = zod.object({
+  id: zod.number(),
+  fromUsername: zod.string(),
+  toUsername: zod.string(),
+  body: zod.string(),
+  mine: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+export const GetConversationResponse = zod.array(GetConversationResponseItem);
+
+export const sendMessageBodyBodyMax = 1000;
+
+export const SendMessageBody = zod.object({
+  toUsername: zod.string(),
+  body: zod.string().min(1).max(sendMessageBodyBodyMax),
+});
+
+export const SendMessageResponse = zod.object({
+  id: zod.number(),
+  fromUsername: zod.string(),
+  toUsername: zod.string(),
+  body: zod.string(),
+  mine: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+
+export const GetNotificationsResponseItem = zod.object({
+  id: zod.number(),
+  type: zod.string(),
+  title: zod.string(),
+  body: zod.string().nullish(),
+  link: zod.string().nullish(),
+  read: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+export const GetNotificationsResponse = zod.array(GetNotificationsResponseItem);
+
+export const MarkAllNotificationsReadResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const ListMyMentorGroupsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  joinCode: zod.string(),
+  isMentor: zod.boolean(),
+  memberCount: zod.number(),
+  mentorUsername: zod.string(),
+  mentorDisplayName: zod.string(),
+});
+export const ListMyMentorGroupsResponse = zod.array(
+  ListMyMentorGroupsResponseItem,
+);
+
+export const createMentorGroupBodyNameMin = 2;
+export const createMentorGroupBodyNameMax = 64;
+
+export const CreateMentorGroupBody = zod.object({
+  name: zod
+    .string()
+    .min(createMentorGroupBodyNameMin)
+    .max(createMentorGroupBodyNameMax),
+  description: zod.string().nullish(),
+});
+
+export const CreateMentorGroupResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  joinCode: zod.string(),
+  isMentor: zod.boolean(),
+  mentorUsername: zod.string(),
+  mentorDisplayName: zod.string(),
+  members: zod.array(
+    zod.object({
+      username: zod.string(),
+      displayName: zod.string(),
+      avatarSeed: zod.string().nullish(),
+      eloRating: zod.number(),
+      rank: zod.string(),
+      xp: zod.number(),
+      completedAssignments: zod.number(),
+    }),
+  ),
+  assignments: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      notes: zod.string().nullish(),
+      problemSlug: zod.string(),
+      problemTitle: zod.string(),
+      createdAt: zod.coerce.date(),
+      dueAt: zod.coerce.date().nullish(),
+      submissionsCount: zod.number(),
+      mySubmission: zod.union([
+        zod.object({
+          id: zod.number(),
+          username: zod.string(),
+          displayName: zod.string(),
+          status: zod.string(),
+          reviewerScore: zod.number().nullish(),
+          reviewerNote: zod.string().nullish(),
+          code: zod.string(),
+          language: zod.string(),
+          createdAt: zod.coerce.date(),
+        }),
+        zod.null(),
+      ]),
+    }),
+  ),
+});
+
+export const GetMentorGroupParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetMentorGroupResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  joinCode: zod.string(),
+  isMentor: zod.boolean(),
+  mentorUsername: zod.string(),
+  mentorDisplayName: zod.string(),
+  members: zod.array(
+    zod.object({
+      username: zod.string(),
+      displayName: zod.string(),
+      avatarSeed: zod.string().nullish(),
+      eloRating: zod.number(),
+      rank: zod.string(),
+      xp: zod.number(),
+      completedAssignments: zod.number(),
+    }),
+  ),
+  assignments: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      notes: zod.string().nullish(),
+      problemSlug: zod.string(),
+      problemTitle: zod.string(),
+      createdAt: zod.coerce.date(),
+      dueAt: zod.coerce.date().nullish(),
+      submissionsCount: zod.number(),
+      mySubmission: zod.union([
+        zod.object({
+          id: zod.number(),
+          username: zod.string(),
+          displayName: zod.string(),
+          status: zod.string(),
+          reviewerScore: zod.number().nullish(),
+          reviewerNote: zod.string().nullish(),
+          code: zod.string(),
+          language: zod.string(),
+          createdAt: zod.coerce.date(),
+        }),
+        zod.null(),
+      ]),
+    }),
+  ),
+});
+
+export const JoinMentorGroupBody = zod.object({
+  joinCode: zod.string(),
+});
+
+export const JoinMentorGroupResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  joinCode: zod.string(),
+  isMentor: zod.boolean(),
+  mentorUsername: zod.string(),
+  mentorDisplayName: zod.string(),
+  members: zod.array(
+    zod.object({
+      username: zod.string(),
+      displayName: zod.string(),
+      avatarSeed: zod.string().nullish(),
+      eloRating: zod.number(),
+      rank: zod.string(),
+      xp: zod.number(),
+      completedAssignments: zod.number(),
+    }),
+  ),
+  assignments: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      notes: zod.string().nullish(),
+      problemSlug: zod.string(),
+      problemTitle: zod.string(),
+      createdAt: zod.coerce.date(),
+      dueAt: zod.coerce.date().nullish(),
+      submissionsCount: zod.number(),
+      mySubmission: zod.union([
+        zod.object({
+          id: zod.number(),
+          username: zod.string(),
+          displayName: zod.string(),
+          status: zod.string(),
+          reviewerScore: zod.number().nullish(),
+          reviewerNote: zod.string().nullish(),
+          code: zod.string(),
+          language: zod.string(),
+          createdAt: zod.coerce.date(),
+        }),
+        zod.null(),
+      ]),
+    }),
+  ),
+});
+
+export const CreateAssignmentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const createAssignmentBodyTitleMax = 120;
+
+export const CreateAssignmentBody = zod.object({
+  problemSlug: zod.string(),
+  title: zod.string().min(1).max(createAssignmentBodyTitleMax),
+  notes: zod.string().nullish(),
+  dueAt: zod.coerce.date().nullish(),
+});
+
+export const CreateAssignmentResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  notes: zod.string().nullish(),
+  problemSlug: zod.string(),
+  problemTitle: zod.string(),
+  createdAt: zod.coerce.date(),
+  dueAt: zod.coerce.date().nullish(),
+  submissionsCount: zod.number(),
+  mySubmission: zod.union([
+    zod.object({
+      id: zod.number(),
+      username: zod.string(),
+      displayName: zod.string(),
+      status: zod.string(),
+      reviewerScore: zod.number().nullish(),
+      reviewerNote: zod.string().nullish(),
+      code: zod.string(),
+      language: zod.string(),
+      createdAt: zod.coerce.date(),
+    }),
+    zod.null(),
+  ]),
+});
+
+export const SubmitAssignmentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const SubmitAssignmentBody = zod.object({
+  code: zod.string(),
+  language: zod.enum(["javascript", "python"]),
+});
+
+export const SubmitAssignmentResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const ReviewAssignmentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const reviewAssignmentBodyScoreMin = 0;
+export const reviewAssignmentBodyScoreMax = 100;
+
+export const reviewAssignmentBodyNoteMax = 1000;
+
+export const ReviewAssignmentBody = zod.object({
+  submissionId: zod.number(),
+  score: zod
+    .number()
+    .min(reviewAssignmentBodyScoreMin)
+    .max(reviewAssignmentBodyScoreMax),
+  note: zod.string().max(reviewAssignmentBodyNoteMax),
+});
+
+export const ReviewAssignmentResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const ListHiringChallengesResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string(),
+  companyUsername: zod.string(),
+  companyDisplayName: zod.string(),
+  problemCount: zod.number(),
+  applicantCount: zod.number(),
+  positions: zod.number(),
+  closesAt: zod.coerce.date().nullish(),
+  applied: zod.boolean(),
+});
+export const ListHiringChallengesResponse = zod.array(
+  ListHiringChallengesResponseItem,
+);
+
+export const GetHiringChallengeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetHiringChallengeResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string(),
+  companyUsername: zod.string(),
+  companyDisplayName: zod.string(),
+  problems: zod.array(
+    zod.object({
+      id: zod.number(),
+      slug: zod.string(),
+      title: zod.string(),
+      difficulty: zod.string(),
+      tags: zod.array(zod.string()),
+      xpReward: zod.number(),
+      eloReward: zod.number(),
+      solvedCount: zod.number(),
+    }),
+  ),
+  applicantCount: zod.number(),
+  positions: zod.number(),
+  closesAt: zod.coerce.date().nullish(),
+  applied: zod.boolean(),
+  myStatus: zod.string(),
+  myScore: zod.number().nullish(),
+  mySolved: zod.number().nullish(),
+});
+
+export const ApplyToHiringChallengeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ApplyToHiringChallengeResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const GetHiringLeaderboardParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetHiringLeaderboardResponseItem = zod.object({
+  position: zod.number(),
+  username: zod.string(),
+  displayName: zod.string(),
+  avatarSeed: zod.string().nullish(),
+  score: zod.number(),
+  solvedCount: zod.number(),
+  status: zod.string(),
+  eloRating: zod.number().optional(),
+  rank: zod.string().optional(),
+});
+export const GetHiringLeaderboardResponse = zod.array(
+  GetHiringLeaderboardResponseItem,
+);
+
+export const ListBossesResponseItem = zod.object({
+  id: zod.number(),
+  slug: zod.string(),
+  name: zod.string(),
+  title: zod.string(),
+  description: zod.string().optional(),
+  difficulty: zod.string(),
+  maxHp: zod.number(),
+  rewardXp: zod.number(),
+  rewardCoins: zod.number(),
+  rewardTitle: zod.string().nullish(),
+  problemCount: zod.number(),
+  artColor: zod.string(),
+  icon: zod.string(),
+  defeated: zod.boolean(),
+});
+export const ListBossesResponse = zod.array(ListBossesResponseItem);
+
+export const GetBossParams = zod.object({
+  slug: zod.coerce.string(),
+});
+
+export const GetBossResponse = zod.object({
+  id: zod.number(),
+  slug: zod.string(),
+  name: zod.string(),
+  title: zod.string(),
+  description: zod.string(),
+  difficulty: zod.string(),
+  maxHp: zod.number(),
+  rewardXp: zod.number(),
+  rewardCoins: zod.number(),
+  rewardTitle: zod.string().nullish(),
+  problems: zod.array(
+    zod.object({
+      id: zod.number(),
+      slug: zod.string(),
+      title: zod.string(),
+      difficulty: zod.string(),
+      tags: zod.array(zod.string()),
+      xpReward: zod.number(),
+      eloReward: zod.number(),
+      solvedCount: zod.number(),
+    }),
+  ),
+  artColor: zod.string(),
+  icon: zod.string(),
+  defeated: zod.boolean(),
+});
+
+export const StartBossFightParams = zod.object({
+  slug: zod.coerce.string(),
+});
+
+export const StartBossFightResponse = zod.object({
+  id: zod.number(),
+  bossId: zod.number(),
+  bossSlug: zod.string(),
+  bossName: zod.string(),
+  title: zod.string().optional(),
+  artColor: zod.string().optional(),
+  icon: zod.string().optional(),
+  maxHp: zod.number(),
+  bossHp: zod.number(),
+  playerHp: zod.number(),
+  combo: zod.number(),
+  state: zod.enum(["active", "victory", "defeat"]),
+  currentProblem: zod.union([
+    zod.object({
+      id: zod.number(),
+      slug: zod.string(),
+      title: zod.string(),
+      difficulty: zod.string(),
+      statement: zod.string(),
+      inputDescription: zod.string(),
+      outputDescription: zod.string(),
+      constraints: zod.string(),
+      examples: zod.array(
+        zod.object({
+          input: zod.string(),
+          output: zod.string(),
+          explanation: zod.string().nullish(),
+        }),
+      ),
+      publicTestCases: zod.array(
+        zod.object({
+          input: zod.string(),
+          expectedOutput: zod.string(),
+        }),
+      ),
+      tags: zod.array(zod.string()),
+      xpReward: zod.number(),
+      eloReward: zod.number(),
+      timeLimit: zod.number(),
+      memoryLimit: zod.number(),
+      starterCode: zod.object({
+        javascript: zod.string(),
+        python: zod.string(),
+      }),
+    }),
+    zod.null(),
+  ]),
+  currentProblemIdx: zod.number(),
+  totalProblems: zod.number(),
+  result: zod.string().nullish(),
+  rewardXp: zod.number().nullish(),
+  rewardCoins: zod.number().nullish(),
+  rewardTitle: zod.string().nullish(),
+});
+
+export const GetActiveBossFightResponse = zod.object({
+  id: zod.number(),
+  bossId: zod.number(),
+  bossSlug: zod.string(),
+  bossName: zod.string(),
+  title: zod.string().optional(),
+  artColor: zod.string().optional(),
+  icon: zod.string().optional(),
+  maxHp: zod.number(),
+  bossHp: zod.number(),
+  playerHp: zod.number(),
+  combo: zod.number(),
+  state: zod.enum(["active", "victory", "defeat"]),
+  currentProblem: zod.union([
+    zod.object({
+      id: zod.number(),
+      slug: zod.string(),
+      title: zod.string(),
+      difficulty: zod.string(),
+      statement: zod.string(),
+      inputDescription: zod.string(),
+      outputDescription: zod.string(),
+      constraints: zod.string(),
+      examples: zod.array(
+        zod.object({
+          input: zod.string(),
+          output: zod.string(),
+          explanation: zod.string().nullish(),
+        }),
+      ),
+      publicTestCases: zod.array(
+        zod.object({
+          input: zod.string(),
+          expectedOutput: zod.string(),
+        }),
+      ),
+      tags: zod.array(zod.string()),
+      xpReward: zod.number(),
+      eloReward: zod.number(),
+      timeLimit: zod.number(),
+      memoryLimit: zod.number(),
+      starterCode: zod.object({
+        javascript: zod.string(),
+        python: zod.string(),
+      }),
+    }),
+    zod.null(),
+  ]),
+  currentProblemIdx: zod.number(),
+  totalProblems: zod.number(),
+  result: zod.string().nullish(),
+  rewardXp: zod.number().nullish(),
+  rewardCoins: zod.number().nullish(),
+  rewardTitle: zod.string().nullish(),
+});
+
+export const BossAttackParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const BossAttackBody = zod.object({
+  language: zod.enum(["javascript", "python"]),
+  code: zod.string(),
+});
+
+export const BossAttackResponse = zod.object({
+  passed: zod.boolean(),
+  passedCount: zod.number(),
+  totalCount: zod.number(),
+  damageDealt: zod.number(),
+  playerDamage: zod.number(),
+  comboMultiplier: zod.number(),
+  message: zod.string(),
+  fight: zod.object({
+    id: zod.number(),
+    bossId: zod.number(),
+    bossSlug: zod.string(),
+    bossName: zod.string(),
+    title: zod.string().optional(),
+    artColor: zod.string().optional(),
+    icon: zod.string().optional(),
+    maxHp: zod.number(),
+    bossHp: zod.number(),
+    playerHp: zod.number(),
+    combo: zod.number(),
+    state: zod.enum(["active", "victory", "defeat"]),
+    currentProblem: zod.union([
+      zod.object({
+        id: zod.number(),
+        slug: zod.string(),
+        title: zod.string(),
+        difficulty: zod.string(),
+        statement: zod.string(),
+        inputDescription: zod.string(),
+        outputDescription: zod.string(),
+        constraints: zod.string(),
+        examples: zod.array(
+          zod.object({
+            input: zod.string(),
+            output: zod.string(),
+            explanation: zod.string().nullish(),
+          }),
+        ),
+        publicTestCases: zod.array(
+          zod.object({
+            input: zod.string(),
+            expectedOutput: zod.string(),
+          }),
+        ),
+        tags: zod.array(zod.string()),
+        xpReward: zod.number(),
+        eloReward: zod.number(),
+        timeLimit: zod.number(),
+        memoryLimit: zod.number(),
+        starterCode: zod.object({
+          javascript: zod.string(),
+          python: zod.string(),
+        }),
+      }),
+      zod.null(),
+    ]),
+    currentProblemIdx: zod.number(),
+    totalProblems: zod.number(),
+    result: zod.string().nullish(),
+    rewardXp: zod.number().nullish(),
+    rewardCoins: zod.number().nullish(),
+    rewardTitle: zod.string().nullish(),
+  }),
+});
+
+export const ForfeitBossFightParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ForfeitBossFightResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const GetMyAnalyticsResponse = zod.object({
+  solveSpeed: zod.object({
+    averageMs: zod.number(),
+    fastestMs: zod.number(),
+  }),
+  accuracy: zod.object({
+    overall: zod.number(),
+    last30: zod.number(),
+  }),
+  languageUsage: zod.array(
+    zod.object({
+      language: zod.string(),
+      count: zod.number(),
+    }),
+  ),
+  difficultyBreakdown: zod.array(
+    zod.object({
+      difficulty: zod.string(),
+      solved: zod.number(),
+      attempted: zod.number(),
+    }),
+  ),
+  tagPerformance: zod.array(
+    zod.object({
+      tag: zod.string(),
+      solved: zod.number(),
+      attempted: zod.number(),
+      accuracy: zod.number(),
+    }),
+  ),
+  weeklyActivity: zod.array(
+    zod.object({
+      date: zod.string(),
+      count: zod.number(),
+    }),
+  ),
+  recentTrend: zod.array(
+    zod.object({
+      date: zod.string(),
+      elo: zod.number(),
+    }),
+  ),
+  skillRadar: zod.array(
+    zod.object({
+      skill: zod.string(),
+      value: zod.number(),
+    }),
+  ),
+  recommendations: zod.array(
+    zod.object({
+      id: zod.number(),
+      slug: zod.string(),
+      title: zod.string(),
+      difficulty: zod.string(),
+      tags: zod.array(zod.string()),
+      xpReward: zod.number(),
+      eloReward: zod.number(),
+      solvedCount: zod.number(),
+    }),
+  ),
+});

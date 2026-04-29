@@ -17,6 +17,14 @@ tags:
   - name: queue
   - name: leaderboard
   - name: seasons
+  - name: replays
+  - name: missions
+  - name: social
+  - name: mentor
+  - name: hiring
+  - name: bosses
+  - name: analytics
+  - name: i18n
 paths:
   /healthz:
     get:
@@ -211,6 +219,12 @@ paths:
     post:
       operationId: joinQueue
       tags: [queue]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinQueueInput"
       responses:
         "200":
           description: OK
@@ -365,6 +379,530 @@ paths:
                 items:
                   $ref: "#/components/schemas/Season"
 
+  /me/language:
+    post:
+      operationId: setLanguage
+      tags: [i18n]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetLanguageInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /replays/{battleId}:
+    get:
+      operationId: getReplay
+      tags: [replays]
+      parameters:
+        - name: battleId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Replay"
+
+  /missions:
+    get:
+      operationId: getMyMissions
+      tags: [missions]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MissionProgress"
+  /missions/{id}/claim:
+    post:
+      operationId: claimMission
+      tags: [missions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MissionClaimResult"
+
+  /social/feed:
+    get:
+      operationId: getActivityFeed
+      tags: [social]
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [global, following]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+  /social/follow:
+    post:
+      operationId: followUser
+      tags: [social]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserTargetInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+  /social/unfollow:
+    post:
+      operationId: unfollowUser
+      tags: [social]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserTargetInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+  /social/friends:
+    get:
+      operationId: getFriends
+      tags: [social]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FriendsResponse"
+  /social/friends/request:
+    post:
+      operationId: sendFriendRequest
+      tags: [social]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserTargetInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+  /social/friends/accept:
+    post:
+      operationId: acceptFriendRequest
+      tags: [social]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserTargetInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+  /social/messages/{username}:
+    get:
+      operationId: getConversation
+      tags: [social]
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DirectMessage"
+  /social/messages/send:
+    post:
+      operationId: sendMessage
+      tags: [social]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DirectMessage"
+  /social/notifications:
+    get:
+      operationId: getNotifications
+      tags: [social]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationItem"
+  /social/notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [social]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /mentor/groups:
+    get:
+      operationId: listMyMentorGroups
+      tags: [mentor]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MentorGroupSummary"
+    post:
+      operationId: createMentorGroup
+      tags: [mentor]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMentorGroupInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorGroupDetail"
+  /mentor/groups/{id}:
+    get:
+      operationId: getMentorGroup
+      tags: [mentor]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorGroupDetail"
+  /mentor/groups/join:
+    post:
+      operationId: joinMentorGroup
+      tags: [mentor]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinGroupInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorGroupDetail"
+  /mentor/groups/{id}/assignments:
+    post:
+      operationId: createAssignment
+      tags: [mentor]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAssignmentInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssignmentSummary"
+  /mentor/assignments/{id}/submit:
+    post:
+      operationId: submitAssignment
+      tags: [mentor]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitAssignmentInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+  /mentor/assignments/{id}/review:
+    post:
+      operationId: reviewAssignment
+      tags: [mentor]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewAssignmentInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /hiring/challenges:
+    get:
+      operationId: listHiringChallenges
+      tags: [hiring]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HiringChallengeSummary"
+  /hiring/challenges/{id}:
+    get:
+      operationId: getHiringChallenge
+      tags: [hiring]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HiringChallengeDetail"
+  /hiring/challenges/{id}/apply:
+    post:
+      operationId: applyToHiringChallenge
+      tags: [hiring]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+  /hiring/challenges/{id}/leaderboard:
+    get:
+      operationId: getHiringLeaderboard
+      tags: [hiring]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CandidateEntry"
+
+  /bosses:
+    get:
+      operationId: listBosses
+      tags: [bosses]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BossSummary"
+  /bosses/{slug}:
+    get:
+      operationId: getBoss
+      tags: [bosses]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BossDetail"
+  /bosses/{slug}/start:
+    post:
+      operationId: startBossFight
+      tags: [bosses]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BossFightState"
+  /boss-fights/active:
+    get:
+      operationId: getActiveBossFight
+      tags: [bosses]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BossFightState"
+  /boss-fights/{id}/attack:
+    post:
+      operationId: bossAttack
+      tags: [bosses]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BossAttackInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BossAttackResult"
+  /boss-fights/{id}/forfeit:
+    post:
+      operationId: forfeitBossFight
+      tags: [bosses]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /analytics/me:
+    get:
+      operationId: getMyAnalytics
+      tags: [analytics]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserAnalytics"
+
 components:
   schemas:
     HealthStatus:
@@ -409,6 +947,8 @@ components:
           eloRating,
           highestElo,
           xp,
+          coins,
+          language,
           battleWins,
           battleLosses,
           battleDraws,
@@ -427,6 +967,9 @@ components:
         eloRating: { type: integer }
         highestElo: { type: integer }
         xp: { type: integer }
+        coins: { type: integer }
+        language: { type: string }
+        title: { type: ["string", "null"] }
         battleWins: { type: integer }
         battleLosses: { type: integer }
         battleDraws: { type: integer }
@@ -661,6 +1204,9 @@ components:
         state:
           type: string
           enum: [idle, searching, match_found, accepted, in_battle, finished]
+        mode:
+          type: ["string", "null"]
+          enum: [ranked, normal, practice, null]
         secondsInQueue: { type: integer }
         searchRange: { type: integer }
         matchId:
@@ -782,3 +1328,499 @@ components:
           oneOf:
             - $ref: "#/components/schemas/LeaderboardEntry"
             - type: "null"
+
+    JoinQueueInput:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum: [ranked, normal, practice]
+          default: ranked
+
+    SetLanguageInput:
+      type: object
+      required: [language]
+      properties:
+        language:
+          type: string
+          enum: [mn, en]
+
+    Replay:
+      type: object
+      required: [battleId, problemId, problemTitle, durationMs, players, events]
+      properties:
+        battleId: { type: string }
+        problemId: { type: integer }
+        problemTitle: { type: string }
+        durationMs: { type: integer }
+        players:
+          type: array
+          items: { $ref: "#/components/schemas/ReplayParticipant" }
+        events:
+          type: array
+          items: { $ref: "#/components/schemas/ReplayEvent" }
+
+    ReplayParticipant:
+      type: object
+      required: [userId, username, displayName, eloBefore, eloAfter, finalPassed]
+      properties:
+        userId: { type: integer }
+        username: { type: string }
+        displayName: { type: string }
+        avatarSeed: { type: ["string", "null"] }
+        eloBefore: { type: integer }
+        eloAfter: { type: ["integer", "null"] }
+        finalPassed: { type: integer }
+
+    ReplayEvent:
+      type: object
+      required: [t, type, userId]
+      properties:
+        t: { type: integer }
+        type:
+          type: string
+          enum: [code, submission, chat, finish]
+        userId: { type: integer }
+        code: { type: ["string", "null"] }
+        passed: { type: ["integer", "null"] }
+        total: { type: ["integer", "null"] }
+        message: { type: ["string", "null"] }
+
+    MissionProgress:
+      type: object
+      required: [id, slug, title, description, period, goalCount, progress, claimed, rewardXp, rewardCoins, icon, periodKey, percent]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        title: { type: string }
+        description: { type: string }
+        period:
+          type: string
+          enum: [daily, weekly]
+        goalCount: { type: integer }
+        progress: { type: integer }
+        claimed: { type: boolean }
+        rewardXp: { type: integer }
+        rewardCoins: { type: integer }
+        rewardBadge: { type: ["string", "null"] }
+        icon: { type: string }
+        periodKey: { type: string }
+        percent: { type: number }
+
+    MissionClaimResult:
+      type: object
+      required: [ok, xpGained, coinsGained, totalXp, totalCoins]
+      properties:
+        ok: { type: boolean }
+        xpGained: { type: integer }
+        coinsGained: { type: integer }
+        badge: { type: ["string", "null"] }
+        totalXp: { type: integer }
+        totalCoins: { type: integer }
+
+    UserTargetInput:
+      type: object
+      required: [username]
+      properties:
+        username: { type: string }
+
+    SendMessageInput:
+      type: object
+      required: [toUsername, body]
+      properties:
+        toUsername: { type: string }
+        body: { type: string, minLength: 1, maxLength: 1000 }
+
+    DirectMessage:
+      type: object
+      required: [id, fromUsername, toUsername, body, createdAt, mine]
+      properties:
+        id: { type: integer }
+        fromUsername: { type: string }
+        toUsername: { type: string }
+        body: { type: string }
+        mine: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    ActivityItem:
+      type: object
+      required: [id, username, displayName, type, createdAt, payload]
+      properties:
+        id: { type: integer }
+        username: { type: string }
+        displayName: { type: string }
+        avatarSeed: { type: ["string", "null"] }
+        type: { type: string }
+        payload:
+          type: object
+          additionalProperties: true
+        createdAt: { type: string, format: date-time }
+
+    NotificationItem:
+      type: object
+      required: [id, type, title, read, createdAt]
+      properties:
+        id: { type: integer }
+        type: { type: string }
+        title: { type: string }
+        body: { type: ["string", "null"] }
+        link: { type: ["string", "null"] }
+        read: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    FriendsResponse:
+      type: object
+      required: [friends, incoming, outgoing]
+      properties:
+        friends:
+          type: array
+          items: { $ref: "#/components/schemas/FriendUser" }
+        incoming:
+          type: array
+          items: { $ref: "#/components/schemas/FriendUser" }
+        outgoing:
+          type: array
+          items: { $ref: "#/components/schemas/FriendUser" }
+
+    FriendUser:
+      type: object
+      required: [username, displayName, eloRating, rank]
+      properties:
+        username: { type: string }
+        displayName: { type: string }
+        avatarSeed: { type: ["string", "null"] }
+        eloRating: { type: integer }
+        rank: { type: string }
+        title: { type: ["string", "null"] }
+
+    MentorGroupSummary:
+      type: object
+      required: [id, name, joinCode, isMentor, memberCount, mentorUsername, mentorDisplayName]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        joinCode: { type: string }
+        isMentor: { type: boolean }
+        memberCount: { type: integer }
+        mentorUsername: { type: string }
+        mentorDisplayName: { type: string }
+
+    MentorGroupDetail:
+      type: object
+      required: [id, name, joinCode, isMentor, mentorUsername, mentorDisplayName, members, assignments]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        joinCode: { type: string }
+        isMentor: { type: boolean }
+        mentorUsername: { type: string }
+        mentorDisplayName: { type: string }
+        members:
+          type: array
+          items: { $ref: "#/components/schemas/GroupMember" }
+        assignments:
+          type: array
+          items: { $ref: "#/components/schemas/AssignmentSummary" }
+
+    GroupMember:
+      type: object
+      required: [username, displayName, eloRating, rank, xp, completedAssignments]
+      properties:
+        username: { type: string }
+        displayName: { type: string }
+        avatarSeed: { type: ["string", "null"] }
+        eloRating: { type: integer }
+        rank: { type: string }
+        xp: { type: integer }
+        completedAssignments: { type: integer }
+
+    CreateMentorGroupInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 64 }
+        description: { type: ["string", "null"] }
+
+    JoinGroupInput:
+      type: object
+      required: [joinCode]
+      properties:
+        joinCode: { type: string }
+
+    CreateAssignmentInput:
+      type: object
+      required: [problemSlug, title]
+      properties:
+        problemSlug: { type: string }
+        title: { type: string, minLength: 1, maxLength: 120 }
+        notes: { type: ["string", "null"] }
+        dueAt:
+          type: ["string", "null"]
+          format: date-time
+
+    AssignmentSummary:
+      type: object
+      required: [id, title, problemSlug, problemTitle, createdAt, submissionsCount, mySubmission]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        notes: { type: ["string", "null"] }
+        problemSlug: { type: string }
+        problemTitle: { type: string }
+        createdAt: { type: string, format: date-time }
+        dueAt:
+          type: ["string", "null"]
+          format: date-time
+        submissionsCount: { type: integer }
+        mySubmission:
+          oneOf:
+            - $ref: "#/components/schemas/AssignmentSubmissionEntry"
+            - type: "null"
+
+    AssignmentSubmissionEntry:
+      type: object
+      required: [id, username, displayName, status, createdAt, code, language]
+      properties:
+        id: { type: integer }
+        username: { type: string }
+        displayName: { type: string }
+        status: { type: string }
+        reviewerScore: { type: ["integer", "null"] }
+        reviewerNote: { type: ["string", "null"] }
+        code: { type: string }
+        language: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    SubmitAssignmentInput:
+      type: object
+      required: [code, language]
+      properties:
+        code: { type: string }
+        language:
+          type: string
+          enum: [javascript, python]
+
+    ReviewAssignmentInput:
+      type: object
+      required: [submissionId, score, note]
+      properties:
+        submissionId: { type: integer }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        note: { type: string, maxLength: 1000 }
+
+    HiringChallengeSummary:
+      type: object
+      required: [id, title, description, companyUsername, companyDisplayName, problemCount, applicantCount, positions, applied]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: string }
+        companyUsername: { type: string }
+        companyDisplayName: { type: string }
+        problemCount: { type: integer }
+        applicantCount: { type: integer }
+        positions: { type: integer }
+        closesAt:
+          type: ["string", "null"]
+          format: date-time
+        applied: { type: boolean }
+
+    HiringChallengeDetail:
+      type: object
+      required: [id, title, description, companyUsername, companyDisplayName, problems, applicantCount, positions, applied, myStatus]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: string }
+        companyUsername: { type: string }
+        companyDisplayName: { type: string }
+        problems:
+          type: array
+          items: { $ref: "#/components/schemas/ProblemSummary" }
+        applicantCount: { type: integer }
+        positions: { type: integer }
+        closesAt:
+          type: ["string", "null"]
+          format: date-time
+        applied: { type: boolean }
+        myStatus: { type: string }
+        myScore: { type: ["integer", "null"] }
+        mySolved: { type: ["integer", "null"] }
+
+    CandidateEntry:
+      type: object
+      required: [position, username, displayName, score, solvedCount, status]
+      properties:
+        position: { type: integer }
+        username: { type: string }
+        displayName: { type: string }
+        avatarSeed: { type: ["string", "null"] }
+        score: { type: integer }
+        solvedCount: { type: integer }
+        status: { type: string }
+        eloRating: { type: integer }
+        rank: { type: string }
+
+    BossSummary:
+      type: object
+      required: [id, slug, name, title, difficulty, maxHp, rewardXp, rewardCoins, problemCount, artColor, icon, defeated]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        name: { type: string }
+        title: { type: string }
+        description: { type: string }
+        difficulty: { type: string }
+        maxHp: { type: integer }
+        rewardXp: { type: integer }
+        rewardCoins: { type: integer }
+        rewardTitle: { type: ["string", "null"] }
+        problemCount: { type: integer }
+        artColor: { type: string }
+        icon: { type: string }
+        defeated: { type: boolean }
+
+    BossDetail:
+      type: object
+      required: [id, slug, name, title, description, difficulty, maxHp, rewardXp, rewardCoins, problems, artColor, icon, defeated]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        name: { type: string }
+        title: { type: string }
+        description: { type: string }
+        difficulty: { type: string }
+        maxHp: { type: integer }
+        rewardXp: { type: integer }
+        rewardCoins: { type: integer }
+        rewardTitle: { type: ["string", "null"] }
+        problems:
+          type: array
+          items: { $ref: "#/components/schemas/ProblemSummary" }
+        artColor: { type: string }
+        icon: { type: string }
+        defeated: { type: boolean }
+
+    BossFightState:
+      type: object
+      required: [id, bossId, bossSlug, bossName, maxHp, bossHp, playerHp, combo, state, currentProblem, totalProblems, currentProblemIdx]
+      properties:
+        id: { type: integer }
+        bossId: { type: integer }
+        bossSlug: { type: string }
+        bossName: { type: string }
+        title: { type: string }
+        artColor: { type: string }
+        icon: { type: string }
+        maxHp: { type: integer }
+        bossHp: { type: integer }
+        playerHp: { type: integer }
+        combo: { type: integer }
+        state:
+          type: string
+          enum: [active, victory, defeat]
+        currentProblem:
+          oneOf:
+            - $ref: "#/components/schemas/Problem"
+            - type: "null"
+        currentProblemIdx: { type: integer }
+        totalProblems: { type: integer }
+        result: { type: ["string", "null"] }
+        rewardXp: { type: ["integer", "null"] }
+        rewardCoins: { type: ["integer", "null"] }
+        rewardTitle: { type: ["string", "null"] }
+
+    BossAttackInput:
+      type: object
+      required: [language, code]
+      properties:
+        language:
+          type: string
+          enum: [javascript, python]
+        code: { type: string }
+
+    BossAttackResult:
+      type: object
+      required: [passed, totalCount, passedCount, damageDealt, playerDamage, comboMultiplier, message, fight]
+      properties:
+        passed: { type: boolean }
+        passedCount: { type: integer }
+        totalCount: { type: integer }
+        damageDealt: { type: integer }
+        playerDamage: { type: integer }
+        comboMultiplier: { type: number }
+        message: { type: string }
+        fight: { $ref: "#/components/schemas/BossFightState" }
+
+    UserAnalytics:
+      type: object
+      required: [solveSpeed, accuracy, languageUsage, difficultyBreakdown, tagPerformance, weeklyActivity, recentTrend, recommendations, skillRadar]
+      properties:
+        solveSpeed:
+          type: object
+          required: [averageMs, fastestMs]
+          properties:
+            averageMs: { type: integer }
+            fastestMs: { type: integer }
+        accuracy:
+          type: object
+          required: [overall, last30]
+          properties:
+            overall: { type: number }
+            last30: { type: number }
+        languageUsage:
+          type: array
+          items:
+            type: object
+            required: [language, count]
+            properties:
+              language: { type: string }
+              count: { type: integer }
+        difficultyBreakdown:
+          type: array
+          items:
+            type: object
+            required: [difficulty, solved, attempted]
+            properties:
+              difficulty: { type: string }
+              solved: { type: integer }
+              attempted: { type: integer }
+        tagPerformance:
+          type: array
+          items:
+            type: object
+            required: [tag, solved, attempted, accuracy]
+            properties:
+              tag: { type: string }
+              solved: { type: integer }
+              attempted: { type: integer }
+              accuracy: { type: number }
+        weeklyActivity:
+          type: array
+          items:
+            type: object
+            required: [date, count]
+            properties:
+              date: { type: string }
+              count: { type: integer }
+        recentTrend:
+          type: array
+          items:
+            type: object
+            required: [date, elo]
+            properties:
+              date: { type: string }
+              elo: { type: integer }
+        skillRadar:
+          type: array
+          items:
+            type: object
+            required: [skill, value]
+            properties:
+              skill: { type: string }
+              value: { type: number }
+        recommendations:
+          type: array
+          items: { $ref: "#/components/schemas/ProblemSummary" }

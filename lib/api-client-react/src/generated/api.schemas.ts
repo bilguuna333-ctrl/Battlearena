@@ -46,6 +46,10 @@ export interface CurrentUser {
   eloRating: number;
   highestElo: number;
   xp: number;
+  coins: number;
+  language: string;
+  /** @nullable */
+  title?: string | null;
   battleWins: number;
   battleLosses: number;
   battleDraws: number;
@@ -234,6 +238,19 @@ export const QueueStatusState = {
   finished: "finished",
 } as const;
 
+/**
+ * @nullable
+ */
+export type QueueStatusMode =
+  | (typeof QueueStatusMode)[keyof typeof QueueStatusMode]
+  | null;
+
+export const QueueStatusMode = {
+  ranked: "ranked",
+  normal: "normal",
+  practice: "practice",
+} as const;
+
 export interface OpponentSummary {
   username: string;
   displayName: string;
@@ -247,6 +264,8 @@ export interface OpponentSummary {
 
 export interface QueueStatus {
   state: QueueStatusState;
+  /** @nullable */
+  mode?: QueueStatusMode;
   secondsInQueue: number;
   searchRange: number;
   /** @nullable */
@@ -356,6 +375,487 @@ export interface Season {
   topPlayer?: LeaderboardEntry | null;
 }
 
+export type JoinQueueInputMode =
+  (typeof JoinQueueInputMode)[keyof typeof JoinQueueInputMode];
+
+export const JoinQueueInputMode = {
+  ranked: "ranked",
+  normal: "normal",
+  practice: "practice",
+} as const;
+
+export interface JoinQueueInput {
+  mode?: JoinQueueInputMode;
+}
+
+export type SetLanguageInputLanguage =
+  (typeof SetLanguageInputLanguage)[keyof typeof SetLanguageInputLanguage];
+
+export const SetLanguageInputLanguage = {
+  mn: "mn",
+  en: "en",
+} as const;
+
+export interface SetLanguageInput {
+  language: SetLanguageInputLanguage;
+}
+
+export interface ReplayParticipant {
+  userId: number;
+  username: string;
+  displayName: string;
+  /** @nullable */
+  avatarSeed?: string | null;
+  eloBefore: number;
+  /** @nullable */
+  eloAfter: number | null;
+  finalPassed: number;
+}
+
+export type ReplayEventType =
+  (typeof ReplayEventType)[keyof typeof ReplayEventType];
+
+export const ReplayEventType = {
+  code: "code",
+  submission: "submission",
+  chat: "chat",
+  finish: "finish",
+} as const;
+
+export interface ReplayEvent {
+  t: number;
+  type: ReplayEventType;
+  userId: number;
+  /** @nullable */
+  code?: string | null;
+  /** @nullable */
+  passed?: number | null;
+  /** @nullable */
+  total?: number | null;
+  /** @nullable */
+  message?: string | null;
+}
+
+export interface Replay {
+  battleId: string;
+  problemId: number;
+  problemTitle: string;
+  durationMs: number;
+  players: ReplayParticipant[];
+  events: ReplayEvent[];
+}
+
+export type MissionProgressPeriod =
+  (typeof MissionProgressPeriod)[keyof typeof MissionProgressPeriod];
+
+export const MissionProgressPeriod = {
+  daily: "daily",
+  weekly: "weekly",
+} as const;
+
+export interface MissionProgress {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  period: MissionProgressPeriod;
+  goalCount: number;
+  progress: number;
+  claimed: boolean;
+  rewardXp: number;
+  rewardCoins: number;
+  /** @nullable */
+  rewardBadge?: string | null;
+  icon: string;
+  periodKey: string;
+  percent: number;
+}
+
+export interface MissionClaimResult {
+  ok: boolean;
+  xpGained: number;
+  coinsGained: number;
+  /** @nullable */
+  badge?: string | null;
+  totalXp: number;
+  totalCoins: number;
+}
+
+export interface UserTargetInput {
+  username: string;
+}
+
+export interface SendMessageInput {
+  toUsername: string;
+  /**
+   * @minLength 1
+   * @maxLength 1000
+   */
+  body: string;
+}
+
+export interface DirectMessage {
+  id: number;
+  fromUsername: string;
+  toUsername: string;
+  body: string;
+  mine: boolean;
+  createdAt: string;
+}
+
+export type ActivityItemPayload = { [key: string]: unknown };
+
+export interface ActivityItem {
+  id: number;
+  username: string;
+  displayName: string;
+  /** @nullable */
+  avatarSeed?: string | null;
+  type: string;
+  payload: ActivityItemPayload;
+  createdAt: string;
+}
+
+export interface NotificationItem {
+  id: number;
+  type: string;
+  title: string;
+  /** @nullable */
+  body?: string | null;
+  /** @nullable */
+  link?: string | null;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface FriendUser {
+  username: string;
+  displayName: string;
+  /** @nullable */
+  avatarSeed?: string | null;
+  eloRating: number;
+  rank: string;
+  /** @nullable */
+  title?: string | null;
+}
+
+export interface FriendsResponse {
+  friends: FriendUser[];
+  incoming: FriendUser[];
+  outgoing: FriendUser[];
+}
+
+export interface MentorGroupSummary {
+  id: number;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  joinCode: string;
+  isMentor: boolean;
+  memberCount: number;
+  mentorUsername: string;
+  mentorDisplayName: string;
+}
+
+export interface GroupMember {
+  username: string;
+  displayName: string;
+  /** @nullable */
+  avatarSeed?: string | null;
+  eloRating: number;
+  rank: string;
+  xp: number;
+  completedAssignments: number;
+}
+
+export interface AssignmentSubmissionEntry {
+  id: number;
+  username: string;
+  displayName: string;
+  status: string;
+  /** @nullable */
+  reviewerScore?: number | null;
+  /** @nullable */
+  reviewerNote?: string | null;
+  code: string;
+  language: string;
+  createdAt: string;
+}
+
+export interface AssignmentSummary {
+  id: number;
+  title: string;
+  /** @nullable */
+  notes?: string | null;
+  problemSlug: string;
+  problemTitle: string;
+  createdAt: string;
+  /** @nullable */
+  dueAt?: string | null;
+  submissionsCount: number;
+  mySubmission: AssignmentSubmissionEntry | null;
+}
+
+export interface MentorGroupDetail {
+  id: number;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  joinCode: string;
+  isMentor: boolean;
+  mentorUsername: string;
+  mentorDisplayName: string;
+  members: GroupMember[];
+  assignments: AssignmentSummary[];
+}
+
+export interface CreateMentorGroupInput {
+  /**
+   * @minLength 2
+   * @maxLength 64
+   */
+  name: string;
+  /** @nullable */
+  description?: string | null;
+}
+
+export interface JoinGroupInput {
+  joinCode: string;
+}
+
+export interface CreateAssignmentInput {
+  problemSlug: string;
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  title: string;
+  /** @nullable */
+  notes?: string | null;
+  /** @nullable */
+  dueAt?: string | null;
+}
+
+export type SubmitAssignmentInputLanguage =
+  (typeof SubmitAssignmentInputLanguage)[keyof typeof SubmitAssignmentInputLanguage];
+
+export const SubmitAssignmentInputLanguage = {
+  javascript: "javascript",
+  python: "python",
+} as const;
+
+export interface SubmitAssignmentInput {
+  code: string;
+  language: SubmitAssignmentInputLanguage;
+}
+
+export interface ReviewAssignmentInput {
+  submissionId: number;
+  /**
+   * @minimum 0
+   * @maximum 100
+   */
+  score: number;
+  /** @maxLength 1000 */
+  note: string;
+}
+
+export interface HiringChallengeSummary {
+  id: number;
+  title: string;
+  description: string;
+  companyUsername: string;
+  companyDisplayName: string;
+  problemCount: number;
+  applicantCount: number;
+  positions: number;
+  /** @nullable */
+  closesAt?: string | null;
+  applied: boolean;
+}
+
+export interface HiringChallengeDetail {
+  id: number;
+  title: string;
+  description: string;
+  companyUsername: string;
+  companyDisplayName: string;
+  problems: ProblemSummary[];
+  applicantCount: number;
+  positions: number;
+  /** @nullable */
+  closesAt?: string | null;
+  applied: boolean;
+  myStatus: string;
+  /** @nullable */
+  myScore?: number | null;
+  /** @nullable */
+  mySolved?: number | null;
+}
+
+export interface CandidateEntry {
+  position: number;
+  username: string;
+  displayName: string;
+  /** @nullable */
+  avatarSeed?: string | null;
+  score: number;
+  solvedCount: number;
+  status: string;
+  eloRating?: number;
+  rank?: string;
+}
+
+export interface BossSummary {
+  id: number;
+  slug: string;
+  name: string;
+  title: string;
+  description?: string;
+  difficulty: string;
+  maxHp: number;
+  rewardXp: number;
+  rewardCoins: number;
+  /** @nullable */
+  rewardTitle?: string | null;
+  problemCount: number;
+  artColor: string;
+  icon: string;
+  defeated: boolean;
+}
+
+export interface BossDetail {
+  id: number;
+  slug: string;
+  name: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  maxHp: number;
+  rewardXp: number;
+  rewardCoins: number;
+  /** @nullable */
+  rewardTitle?: string | null;
+  problems: ProblemSummary[];
+  artColor: string;
+  icon: string;
+  defeated: boolean;
+}
+
+export type BossFightStateState =
+  (typeof BossFightStateState)[keyof typeof BossFightStateState];
+
+export const BossFightStateState = {
+  active: "active",
+  victory: "victory",
+  defeat: "defeat",
+} as const;
+
+export interface BossFightState {
+  id: number;
+  bossId: number;
+  bossSlug: string;
+  bossName: string;
+  title?: string;
+  artColor?: string;
+  icon?: string;
+  maxHp: number;
+  bossHp: number;
+  playerHp: number;
+  combo: number;
+  state: BossFightStateState;
+  currentProblem: Problem | null;
+  currentProblemIdx: number;
+  totalProblems: number;
+  /** @nullable */
+  result?: string | null;
+  /** @nullable */
+  rewardXp?: number | null;
+  /** @nullable */
+  rewardCoins?: number | null;
+  /** @nullable */
+  rewardTitle?: string | null;
+}
+
+export type BossAttackInputLanguage =
+  (typeof BossAttackInputLanguage)[keyof typeof BossAttackInputLanguage];
+
+export const BossAttackInputLanguage = {
+  javascript: "javascript",
+  python: "python",
+} as const;
+
+export interface BossAttackInput {
+  language: BossAttackInputLanguage;
+  code: string;
+}
+
+export interface BossAttackResult {
+  passed: boolean;
+  passedCount: number;
+  totalCount: number;
+  damageDealt: number;
+  playerDamage: number;
+  comboMultiplier: number;
+  message: string;
+  fight: BossFightState;
+}
+
+export type UserAnalyticsSolveSpeed = {
+  averageMs: number;
+  fastestMs: number;
+};
+
+export type UserAnalyticsAccuracy = {
+  overall: number;
+  last30: number;
+};
+
+export type UserAnalyticsLanguageUsageItem = {
+  language: string;
+  count: number;
+};
+
+export type UserAnalyticsDifficultyBreakdownItem = {
+  difficulty: string;
+  solved: number;
+  attempted: number;
+};
+
+export type UserAnalyticsTagPerformanceItem = {
+  tag: string;
+  solved: number;
+  attempted: number;
+  accuracy: number;
+};
+
+export type UserAnalyticsWeeklyActivityItem = {
+  date: string;
+  count: number;
+};
+
+export type UserAnalyticsRecentTrendItem = {
+  date: string;
+  elo: number;
+};
+
+export type UserAnalyticsSkillRadarItem = {
+  skill: string;
+  value: number;
+};
+
+export interface UserAnalytics {
+  solveSpeed: UserAnalyticsSolveSpeed;
+  accuracy: UserAnalyticsAccuracy;
+  languageUsage: UserAnalyticsLanguageUsageItem[];
+  difficultyBreakdown: UserAnalyticsDifficultyBreakdownItem[];
+  tagPerformance: UserAnalyticsTagPerformanceItem[];
+  weeklyActivity: UserAnalyticsWeeklyActivityItem[];
+  recentTrend: UserAnalyticsRecentTrendItem[];
+  skillRadar: UserAnalyticsSkillRadarItem[];
+  recommendations: ProblemSummary[];
+}
+
 export type ListProblemsParams = {
   difficulty?: string;
 };
@@ -372,4 +872,16 @@ export const GetLeaderboardScope = {
   weekly: "weekly",
   monthly: "monthly",
   season: "season",
+} as const;
+
+export type GetActivityFeedParams = {
+  scope?: GetActivityFeedScope;
+};
+
+export type GetActivityFeedScope =
+  (typeof GetActivityFeedScope)[keyof typeof GetActivityFeedScope];
+
+export const GetActivityFeedScope = {
+  global: "global",
+  following: "following",
 } as const;

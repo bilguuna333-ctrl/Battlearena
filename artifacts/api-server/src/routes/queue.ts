@@ -1,9 +1,12 @@
+import crypto from "node:crypto";
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import {
   db,
   matchQueueTable,
   usersTable,
+  battlesTable,
+  problemsTable,
 } from "@workspace/db";
 import { AcceptMatchBody } from "@workspace/api-zod";
 import { authMiddleware, type AuthedRequest } from "../lib/auth";
@@ -13,8 +16,45 @@ import {
   tryFindMatch,
   tryStartBattleIfBothAccepted,
 } from "../lib/matchmaking";
+import { ensureReplay } from "../lib/replays";
 
 const router: IRouter = Router();
+
+async function startPracticeBattle(userId: number): Promise<string> {
+  const [bot] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.username, "arena_bot"));
+  if (!bot) {
+    throw new Error("Bot user missing");
+  }
+  const [problem] = await db
+    .select({ id: problemsTable.id })
+    .from(problemsTable)
+    .orderBy(sql`RANDOM()`)
+    .limit(1);
+  if (!problem) {
+    throw new Error("No problems available");
+  }
+  const [me] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, userId));
+  const battleId = crypto.randomUUID();
+  await db.insert(battlesTable).values({
+    id: battleId,
+    problemId: problem.id,
+    player1Id: userId,
+    player2Id: bot.id,
+    state: "in_battle",
+    mode: "practice",
+    player1EloBefore: me?.eloRating ?? 1000,
+    player2EloBefore: bot.eloRating,
+    startedAt: new Date(),
+  });
+  await ensureReplay(battleId, problem.id, userId, bot.id);
+  return battleId;
+}
 
 router.post(
   "/queue/join",
@@ -24,17 +64,27 @@ router.post(
       res.status(401).json({ error: "Шаардлагатай" });
       return;
     }
+    const mode = (req.body?.mode as string) ?? "ranked";
+    const validMode = ["ranked", "normal", "practice"].includes(mode) ? mode : "ranked";
+
+    if (validMode === "practice") {
+      // Immediate battle vs bot
+      const battleId = await startPracticeBattle(req.user.id);
+      res.json({ ok: true, state: "in_battle", battleId, mode: validMode });
+      return;
+    }
+
     const [existing] = await db
       .select()
       .from(matchQueueTable)
       .where(eq(matchQueueTable.userId, req.user.id));
     if (existing) {
-      // Reset to fresh searching
       await db
         .update(matchQueueTable)
         .set({
           state: "searching",
           eloAtJoin: req.user.eloRating,
+          mode: validMode,
           matchId: null,
           opponentUserId: null,
           pendingBattleId: null,
@@ -48,10 +98,11 @@ router.post(
         userId: req.user.id,
         eloAtJoin: req.user.eloRating,
         state: "searching",
+        mode: validMode,
         joinedAt: new Date(),
       });
     }
-    res.json({ ok: true, state: "searching" });
+    res.json({ ok: true, state: "searching", mode: validMode });
   },
 );
 

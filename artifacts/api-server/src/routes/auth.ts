@@ -26,6 +26,9 @@ function toCurrentUser(u: typeof usersTable.$inferSelect) {
     eloRating: u.eloRating,
     highestElo: u.highestElo,
     xp: u.xp,
+    coins: u.coins,
+    language: u.language,
+    title: u.title,
     battleWins: u.battleWins,
     battleLosses: u.battleLosses,
     battleDraws: u.battleDraws,
@@ -110,6 +113,27 @@ router.get(
       return;
     }
     res.json(toCurrentUser(req.user));
+  },
+);
+
+router.post(
+  "/me/language",
+  authMiddleware,
+  async (req: AuthedRequest, res): Promise<void> => {
+    if (!req.user) {
+      res.status(401).json({ error: "Шаардлагатай" });
+      return;
+    }
+    const lang = String(req.body?.language ?? "");
+    if (lang !== "mn" && lang !== "en") {
+      res.status(400).json({ error: "Буруу хэл" });
+      return;
+    }
+    await db
+      .update(usersTable)
+      .set({ language: lang })
+      .where(eq(usersTable.id, req.user.id));
+    res.json({ ok: true });
   },
 );
 

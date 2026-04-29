@@ -17,6 +17,10 @@ export interface CurrentUser {
   eloRating: number;
   highestElo: number;
   xp: number;
+  coins: number;
+  language: string;
+  /** @nullable */
+  title?: string | null;
   battleWins: number;
   battleLosses: number;
   battleDraws: number;

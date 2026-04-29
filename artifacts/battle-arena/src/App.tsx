@@ -4,7 +4,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Navbar } from "@/components/layout/Navbar";
 
-// Pages
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -15,6 +14,18 @@ import LiveBattle from "@/pages/LiveBattle";
 import Leaderboard from "@/pages/Leaderboard";
 import Profile from "@/pages/Profile";
 import Seasons from "@/pages/Seasons";
+import Replays from "@/pages/Replays";
+import Replay from "@/pages/Replay";
+import Missions from "@/pages/Missions";
+import Social from "@/pages/Social";
+import Messages from "@/pages/Messages";
+import Mentor from "@/pages/Mentor";
+import MentorGroup from "@/pages/MentorGroup";
+import Hiring from "@/pages/Hiring";
+import HiringDetail from "@/pages/HiringDetail";
+import Bosses from "@/pages/Bosses";
+import BossFight from "@/pages/BossFight";
+import Analytics from "@/pages/Analytics";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -35,6 +46,18 @@ function Router() {
           <Route path="/leaderboard" component={Leaderboard} />
           <Route path="/profile/:username" component={Profile} />
           <Route path="/seasons" component={Seasons} />
+          <Route path="/replays" component={Replays} />
+          <Route path="/replay/:id" component={Replay} />
+          <Route path="/missions" component={Missions} />
+          <Route path="/social" component={Social} />
+          <Route path="/messages/:username" component={Messages} />
+          <Route path="/mentor" component={Mentor} />
+          <Route path="/mentor/:id" component={MentorGroup} />
+          <Route path="/hiring" component={Hiring} />
+          <Route path="/hiring/:id" component={HiringDetail} />
+          <Route path="/bosses" component={Bosses} />
+          <Route path="/bosses/:slug" component={BossFight} />
+          <Route path="/analytics" component={Analytics} />
           <Route component={NotFound} />
         </Switch>
       </main>

@@ -20,6 +20,9 @@ import {
   rankFromElo,
 } from "../lib/elo";
 import { hashCode, runTests } from "../lib/runner";
+import { recordReplayEvent } from "../lib/replays";
+import { applyMissionEvent } from "../lib/missions-engine";
+import { pushActivity, pushNotification } from "../lib/activity";
 
 const router: IRouter = Router();
 
@@ -213,11 +216,16 @@ async function maybeFinishBattle(battleId: string): Promise<void> {
     }
   }
 
-  const changes = computePairEloChanges(
-    battle.player1EloBefore,
-    battle.player2EloBefore,
-    result,
-  );
+  const isRanked = (battle.mode ?? "ranked") === "ranked";
+  const isPractice = (battle.mode ?? "ranked") === "practice";
+
+  const changes = isRanked
+    ? computePairEloChanges(
+        battle.player1EloBefore,
+        battle.player2EloBefore,
+        result,
+      )
+    : { p1: 0, p2: 0 };
   const p1After = battle.player1EloBefore + changes.p1;
   const p2After = battle.player2EloBefore + changes.p2;
 
@@ -239,7 +247,15 @@ async function maybeFinishBattle(battleId: string): Promise<void> {
     })
     .where(eq(battlesTable.id, battleId));
 
-  // Update users
+  // Record replay finish event
+  await recordReplayEvent(battleId, battle.startedAt, {
+    type: "finish",
+    userId: winnerId ?? 0,
+    message:
+      result === "draw" ? "draw" : result === "p1_win" ? "p1_win" : "p2_win",
+  });
+
+  // Update users (skip stat changes for practice; XP only for normal)
   const [p1] = await db
     .select()
     .from(usersTable)
@@ -253,36 +269,77 @@ async function maybeFinishBattle(battleId: string): Promise<void> {
     [p1, p1After, winnerId === battle.player1Id, winnerId === null],
     [p2, p2After, winnerId === battle.player2Id, winnerId === null],
   ] as const) {
-    if (!user) continue;
+    if (!user || user.isBot === 1) continue;
+    if (isPractice) {
+      // Practice: only minimal XP
+      const xpAdd = isWinner ? 25 : 5;
+      await db
+        .update(usersTable)
+        .set({ xp: user.xp + xpAdd })
+        .where(eq(usersTable.id, user.id));
+      continue;
+    }
     const newWins = user.battleWins + (isWinner ? 1 : 0);
     const newLosses = user.battleLosses + (!isWinner && !isDraw ? 1 : 0);
     const newDraws = user.battleDraws + (isDraw ? 1 : 0);
     const newStreak = isWinner ? user.winStreak + 1 : 0;
-    const newHighestElo = Math.max(user.highestElo, eloAfter);
-    const newRank = rankFromElo(eloAfter);
-    const newHighestRank = rankFromElo(newHighestElo);
     const xpAdd = isWinner ? 100 : isDraw ? 30 : 10;
-    await db
-      .update(usersTable)
-      .set({
-        eloRating: eloAfter,
-        highestElo: newHighestElo,
-        battleWins: newWins,
-        battleLosses: newLosses,
-        battleDraws: newDraws,
-        winStreak: newStreak,
-        xp: user.xp + xpAdd,
-        highestRank: newHighestRank,
-      })
-      .where(eq(usersTable.id, user.id));
-    await db.insert(eloHistoryTable).values({
-      userId: user.id,
-      elo: eloAfter,
-      change: eloAfter - user.eloRating,
-      reason: isWinner ? "Тулаанд ялсан" : isDraw ? "Тэнцсэн" : "Тулаанд унасан",
-      battleId,
-    });
-    void newRank;
+    const coinAdd = isWinner ? 25 : isDraw ? 10 : 5;
+    if (isRanked) {
+      const newHighestElo = Math.max(user.highestElo, eloAfter);
+      const newHighestRank = rankFromElo(newHighestElo);
+      await db
+        .update(usersTable)
+        .set({
+          eloRating: eloAfter,
+          highestElo: newHighestElo,
+          battleWins: newWins,
+          battleLosses: newLosses,
+          battleDraws: newDraws,
+          winStreak: newStreak,
+          xp: user.xp + xpAdd,
+          coins: user.coins + coinAdd,
+          highestRank: newHighestRank,
+        })
+        .where(eq(usersTable.id, user.id));
+      await db.insert(eloHistoryTable).values({
+        userId: user.id,
+        elo: eloAfter,
+        change: eloAfter - user.eloRating,
+        reason: isWinner ? "Тулаанд ялсан" : isDraw ? "Тэнцсэн" : "Тулаанд унасан",
+        battleId,
+      });
+    } else {
+      // normal mode: stats but no ELO change
+      await db
+        .update(usersTable)
+        .set({
+          battleWins: newWins,
+          battleLosses: newLosses,
+          battleDraws: newDraws,
+          winStreak: newStreak,
+          xp: user.xp + xpAdd,
+          coins: user.coins + coinAdd,
+        })
+        .where(eq(usersTable.id, user.id));
+    }
+    if (isWinner) {
+      await applyMissionEvent({ userId: user.id, type: "battle_win" });
+      await pushActivity(user.id, "battle_win", {
+        battleId,
+        eloChange: eloAfter - user.eloRating,
+        mode: battle.mode,
+      });
+    }
+    if (!isWinner && !isDraw) {
+      await pushNotification(
+        user.id,
+        "battle_loss",
+        "Тулаанд хожигдлоо",
+        `Бүү бууж өг! Дахин оролд.`,
+        `/battle/${battleId}`,
+      );
+    }
   }
 
   // Clean up queue entries
@@ -429,6 +486,28 @@ router.post(
       .set(updates)
       .where(eq(battlesTable.id, id));
 
+    // Replay events: code snapshot + submission
+    await recordReplayEvent(id, battle.startedAt, {
+      type: "code",
+      userId: req.user.id,
+      code: parsed.data.code,
+    });
+    await recordReplayEvent(id, battle.startedAt, {
+      type: "submission",
+      userId: req.user.id,
+      passed: result.passedCount,
+      total: result.totalCount,
+    });
+
+    // If problem fully solved on a problem (not battle), still emit problem_solved mission event
+    if (result.status === "accepted") {
+      await applyMissionEvent({
+        userId: req.user.id,
+        type: "problem_solved",
+        difficulty: problem.difficulty,
+      });
+    }
+
     await maybeFinishBattle(id);
 
     res.json({
@@ -446,6 +525,60 @@ router.post(
         actual: r.actual,
       })),
     });
+  },
+);
+
+router.post(
+  "/battles/:id/forfeit",
+  authMiddleware,
+  async (req: AuthedRequest, res): Promise<void> => {
+    if (!req.user) {
+      res.status(401).json({ error: "Шаардлагатай" });
+      return;
+    }
+    const id = String(req.params.id);
+    const [battle] = await db
+      .select()
+      .from(battlesTable)
+      .where(eq(battlesTable.id, id));
+    if (!battle) {
+      res.status(404).json({ error: "Тулаан олдсонгүй" });
+      return;
+    }
+    if (
+      battle.player1Id !== req.user.id &&
+      battle.player2Id !== req.user.id
+    ) {
+      res.status(403).json({ error: "Хандалт байхгүй" });
+      return;
+    }
+    if (battle.state !== "in_battle") {
+      res.json({ ok: true });
+      return;
+    }
+    const [problem] = await db
+      .select()
+      .from(problemsTable)
+      .where(eq(problemsTable.id, battle.problemId));
+    const totalTests = problem
+      ? [...problem.publicTestCases, ...problem.hiddenTestCases].length
+      : 0;
+    const isP1 = battle.player1Id === req.user.id;
+    // Forfeit: opponent gets full credit, you keep your existing partial score (probably 0)
+    const updates: Record<string, unknown> = {};
+    if (isP1) {
+      updates.player2Passed = totalTests;
+      updates.player2FinishedAt = new Date();
+    } else {
+      updates.player1Passed = totalTests;
+      updates.player1FinishedAt = new Date();
+    }
+    await db
+      .update(battlesTable)
+      .set(updates)
+      .where(eq(battlesTable.id, id));
+    await maybeFinishBattle(id);
+    res.json({ ok: true });
   },
 );
 
@@ -486,6 +619,11 @@ router.post(
         message: parsed.data.message,
       })
       .returning();
+    await recordReplayEvent(id, battle.startedAt, {
+      type: "chat",
+      userId: req.user.id,
+      message: parsed.data.message,
+    });
     res.json({
       id: row.id,
       userId: row.userId,

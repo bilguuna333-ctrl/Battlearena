@@ -33,7 +33,7 @@ export default function BattleQueue() {
   }, [queueStatus, setLocation]);
 
   const handleJoin = () => {
-    joinMutation.mutate(undefined, {
+    joinMutation.mutate({ data: { mode: "ranked" } }, {
       onSuccess: () => setIsInQueue(true),
       onError: (err) => toast.error(err.message || "Алдаа гарлаа")
     });

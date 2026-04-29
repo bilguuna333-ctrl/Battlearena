@@ -12,6 +12,7 @@ export const battlesTable = pgTable("battles", {
   problemId: integer("problem_id").notNull(),
   player1Id: integer("player1_id").notNull(),
   player2Id: integer("player2_id").notNull(),
+  mode: text("mode").notNull().default("ranked"),
   state: text("state").notNull().default("in_battle"),
   winnerId: integer("winner_id"),
   result: text("result"),
@@ -59,6 +60,7 @@ export const matchQueueTable = pgTable("match_queue", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().unique(),
   eloAtJoin: integer("elo_at_join").notNull(),
+  mode: text("mode").notNull().default("ranked"),
   state: text("state").notNull().default("searching"),
   matchId: text("match_id"),
   pendingBattleId: text("pending_battle_id"),
@@ -71,3 +73,17 @@ export const matchQueueTable = pgTable("match_queue", {
 });
 
 export type MatchQueueEntry = typeof matchQueueTable.$inferSelect;
+
+export const replaysTable = pgTable("replays", {
+  battleId: text("battle_id").primaryKey(),
+  problemId: integer("problem_id").notNull(),
+  player1Id: integer("player1_id").notNull(),
+  player2Id: integer("player2_id").notNull(),
+  durationMs: integer("duration_ms").notNull().default(0),
+  events: jsonb("events").notNull().default([]),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type Replay = typeof replaysTable.$inferSelect;

@@ -8,6 +8,13 @@ import queueRouter from "./queue";
 import battlesRouter from "./battles";
 import leaderboardRouter from "./leaderboard";
 import seasonsRouter from "./seasons";
+import replaysRouter from "./replays";
+import missionsRouter from "./missions";
+import socialRouter from "./social";
+import mentorRouter from "./mentor";
+import hiringRouter from "./hiring";
+import bossesRouter from "./bosses";
+import analyticsRouter from "./analytics";
 
 const router: IRouter = Router();
 
@@ -20,5 +27,12 @@ router.use(queueRouter);
 router.use(battlesRouter);
 router.use(leaderboardRouter);
 router.use(seasonsRouter);
+router.use(replaysRouter);
+router.use(missionsRouter);
+router.use(socialRouter);
+router.use(mentorRouter);
+router.use(hiringRouter);
+router.use(bossesRouter);
+router.use(analyticsRouter);
 
 export default router;
