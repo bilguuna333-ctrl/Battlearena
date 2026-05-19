@@ -122,21 +122,9 @@ export function Navbar() {
               <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <span className="font-semibold text-white tracking-wide text-[15px]">CodeSteppe</span>
+          <span className="font-semibold text-white tracking-wide text-[15px]">CodeBattle</span>
         </Link>
-        
-        <div className="hidden md:flex items-center gap-1">
-          <Link href="/problems">
-            <span className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${location.startsWith('/problems') ? 'text-orange-400' : 'text-gray-400 hover:text-white'}`}>
-              {t("nav.problems")}
-            </span>
-          </Link>
-          <Link href="/battle">
-            <span className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${location.startsWith('/battle') ? 'text-orange-400' : 'text-gray-400 hover:text-white'}`}>
-              {t("nav.battle")}
-            </span>
-          </Link>
-        </div>
+
       </div>
 
       <div className="flex items-center gap-4">
@@ -296,9 +284,7 @@ export function Navbar() {
             <Link href="/missions" onClick={() => setMobileMenuOpen(false)} className={`py-2 ${location.startsWith('/missions') ? 'text-white' : ''}`}>
               {t("nav.missions")}
             </Link>
-            <Link href="/bosses" onClick={() => setMobileMenuOpen(false)} className={`py-2 ${location.startsWith('/bosses') ? 'text-white' : ''}`}>
-              {t("nav.bosses")}
-            </Link>
+
           </div>
         </div>
       )}

@@ -256,6 +256,10 @@ router.post(
           null,
           `/u/${req.user.username}`,
         );
+        emitToUser(target.username, "friend-request-accepted", {
+          byUsername: req.user.username,
+          byDisplayName: req.user.displayName,
+        });
       }
       res.json({ ok: true });
       return;
@@ -272,6 +276,10 @@ router.post(
       null,
       `/social`,
     );
+    emitToUser(target.username, "friend-request-received", {
+      fromUsername: req.user.username,
+      fromDisplayName: req.user.displayName,
+    });
     res.json({ ok: true });
   },
 );
@@ -319,8 +327,73 @@ router.post(
       null,
       `/u/${req.user.username}`,
     );
+    emitToUser(target.username, "friend-request-accepted", {
+      byUsername: req.user.username,
+      byDisplayName: req.user.displayName,
+    });
     res.json({ ok: true });
   },
+);
+
+router.get(
+  "/api/social/conversations",
+  authMiddleware,
+  async (req: AuthedRequest, res): Promise<void> => {
+    if (!req.user) {
+      res.status(401).json({ error: "Шаардлагатай" });
+      return;
+    }
+    const myId = req.user.id;
+
+    const allMsgs = await db
+      .select()
+      .from(messagesTable)
+      .where(or(eq(messagesTable.fromUserId, myId), eq(messagesTable.toUserId, myId)))
+      .orderBy(desc(messagesTable.createdAt));
+
+    const convoPartners = new Map<number, typeof allMsgs[0]>();
+    const unreadCounts = new Map<number, number>();
+
+    for (const msg of allMsgs) {
+      const partnerId = msg.fromUserId === myId ? msg.toUserId : msg.fromUserId;
+      if (!convoPartners.has(partnerId)) {
+        convoPartners.set(partnerId, msg);
+      }
+      if (msg.toUserId === myId && msg.read === 0) {
+        unreadCounts.set(partnerId, (unreadCounts.get(partnerId) || 0) + 1);
+      }
+    }
+
+    if (convoPartners.size === 0) {
+      res.json([]);
+      return;
+    }
+
+    const partnerIds = Array.from(convoPartners.keys());
+    const partners = await db
+      .select()
+      .from(usersTable)
+      .where(inArray(usersTable.id, partnerIds));
+
+    const userMap = new Map(partners.map((u) => [u.id, u]));
+
+    const result = partnerIds.map((pid) => {
+      const u = userMap.get(pid);
+      const lastMsg = convoPartners.get(pid)!;
+      return {
+        username: u?.username ?? "unknown",
+        displayName: u?.displayName ?? "Unknown User",
+        avatarUrl: (u as any)?.avatarUrl || "",
+        avatarSeed: u?.avatarSeed || null,
+        lastMessage: lastMsg.body,
+        lastMessageAt: lastMsg.createdAt.toISOString(),
+        lastMessageFromMe: lastMsg.fromUserId === myId,
+        unreadCount: unreadCounts.get(pid) || 0,
+      };
+    });
+
+    res.json(result);
+  }
 );
 
 router.get(

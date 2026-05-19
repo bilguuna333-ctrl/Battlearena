@@ -321,24 +321,52 @@ router.post(
       comboMult = 1 + Math.min(combo - 1, 4) * 0.25;
       const baseDamage = Math.ceil(boss.maxHp / problemIds.length);
       damage = Math.round(baseDamage * comboMult);
+      
+      // If Custom Boss, scale damage according to skill difficulty
+      if (boss.slug === "code-shadow-lord") {
+        if (fight.currentProblemIdx === 0) {
+          damage = Math.round(100 * comboMult);
+        } else if (fight.currentProblemIdx === 1) {
+          damage = Math.round(250 * comboMult);
+        } else if (fight.currentProblemIdx === 2) {
+          damage = Math.round(500 * comboMult);
+        }
+      }
+      
       bossHp = Math.max(0, bossHp - damage);
-      nextIdx = fight.currentProblemIdx + 1;
+      
+      if (boss.slug === "code-shadow-lord") {
+        nextIdx = fight.currentProblemIdx; // Keep same idx for skills
+      } else {
+        nextIdx = fight.currentProblemIdx + 1;
+      }
     } else {
       combo = 0;
       const ratio = result.totalCount > 0 ? result.passedCount / result.totalCount : 0;
-      // Max 35 damage to player; partial credit reduces it
-      playerDamage = Math.max(10, Math.round(35 * (1 - ratio)));
+      
+      // Scale player damage with skill difficulty
+      let maxPlayerDamage = 35;
+      if (boss.slug === "code-shadow-lord") {
+        if (fight.currentProblemIdx === 0) maxPlayerDamage = 15;
+        else if (fight.currentProblemIdx === 1) maxPlayerDamage = 35;
+        else if (fight.currentProblemIdx === 2) maxPlayerDamage = 60;
+      }
+      
+      playerDamage = Math.max(10, Math.round(maxPlayerDamage * (1 - ratio)));
       playerHp = Math.max(0, playerHp - playerDamage);
     }
 
     let state: "active" | "victory" | "defeat" = "active";
     let resultStr: string | null = null;
-    if (bossHp <= 0 || nextIdx >= problemIds.length) {
+    if (bossHp <= 0) {
       state = "victory";
       resultStr = "victory";
     } else if (playerHp <= 0) {
       state = "defeat";
       resultStr = "defeat";
+    } else if (boss.slug !== "code-shadow-lord" && nextIdx >= problemIds.length) {
+      state = "victory";
+      resultStr = "victory";
     }
 
     await db
@@ -394,6 +422,40 @@ router.post(
       message: result.message,
       fight: fightState,
     });
+  },
+);
+
+router.post(
+  "/api/boss-fights/:id/select-problem",
+  authMiddleware,
+  async (req: AuthedRequest, res): Promise<void> => {
+    if (!req.user) {
+      res.status(401).json({ error: "Шаардлагатай" });
+      return;
+    }
+    const id = Number(req.params.id);
+    const problemIdx = Number(req.body?.problemIdx);
+
+    const [fight] = await db
+      .select()
+      .from(bossFightsTable)
+      .where(eq(bossFightsTable.id, id));
+    if (!fight || fight.userId !== req.user.id) {
+      res.status(404).json({ error: "Тулаан олдсонгүй" });
+      return;
+    }
+
+    await db
+      .update(bossFightsTable)
+      .set({ currentProblemIdx: problemIdx })
+      .where(eq(bossFightsTable.id, id));
+
+    const [updated] = await db
+      .select()
+      .from(bossFightsTable)
+      .where(eq(bossFightsTable.id, id));
+    const state = await buildFightState(updated);
+    res.json(state);
   },
 );
 

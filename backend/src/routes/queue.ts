@@ -213,7 +213,7 @@ router.get(
 );
 
 router.post(
-  "/queue/accept",
+  "/api/queue/accept",
   authMiddleware,
   async (req: AuthedRequest, res): Promise<void> => {
     if (!req.user) {

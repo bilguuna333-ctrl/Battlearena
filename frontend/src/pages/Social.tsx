@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import {
   useGetActivityFeed,
@@ -9,13 +9,15 @@ import {
   useGetMe,
   getGetMeQueryKey,
 } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useT } from "@/lib/i18n";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Users, UserPlus, MessageCircle, Search, X, User, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { io } from "socket.io-client";
+import { apiRequest } from "@/lib/api";
 
 type FriendStatus = "playing" | "online" | "offline";
 
@@ -42,6 +44,57 @@ export default function Social() {
   const { data: friends, isLoading: isFriendsLoading } = useGetFriends();
   const sendReq = useSendFriendRequest();
   const acceptReq = useAcceptFriendRequest();
+
+  const { data: conversations, isLoading: isConvosLoading } = useQuery({
+    queryKey: ["conversations"],
+    queryFn: () => apiRequest<any[]>("/api/social/conversations"),
+    enabled: !!token,
+  });
+
+  const socketRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!me?.username || !token) return;
+
+    const socket = io("http://localhost:5000", {
+      transports: ["websocket", "polling"],
+      reconnection: true,
+    });
+    socketRef.current = socket;
+
+    const myRoom = `user:${me.username}`;
+    socket.on("connect", () => {
+      socket.emit("join-room", myRoom);
+    });
+
+    socket.on("new-message", () => {
+      qc.invalidateQueries({ queryKey: ["conversations"] });
+    });
+
+    socket.on("friend-request-received", () => {
+      qc.invalidateQueries({ queryKey: getGetFriendsQueryKey() });
+      toast({
+        title: "Найзын хүсэлт",
+        description: "Танд шинэ найзын хүсэлт ирлээ.",
+      });
+    });
+
+    socket.on("friend-request-accepted", () => {
+      qc.invalidateQueries({ queryKey: getGetFriendsQueryKey() });
+      toast({
+        title: "Найзын хүсэлт зөвшөөрөгдлөө",
+        description: "Таны найзын хүсэлт зөвшөөрөгдсөн байна.",
+      });
+    });
+
+    return () => {
+      socket.off("new-message");
+      socket.off("friend-request-received");
+      socket.off("friend-request-accepted");
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [me?.username, token, qc, toast]);
   
   const [activeTab, setActiveTab] = useState<"friends" | "chats">("friends");
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,7 +139,10 @@ export default function Social() {
           setAddFriendMode(false);
           qc.invalidateQueries({ queryKey: getGetFriendsQueryKey() });
         },
-        onError: () => toast({ title: t("social.request_failed"), variant: "destructive" }),
+        onError: (err: any) => {
+          const errMsg = err?.data?.error || err?.message || t("social.request_failed");
+          toast({ title: errMsg, variant: "destructive" });
+        },
       },
     );
   };
@@ -308,10 +364,55 @@ export default function Social() {
             )
           ) : (
             // Chats tab
-            <div className="py-16 text-center">
-              <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-600" />
-              <p className="text-gray-500 text-sm">Чат байхгүй байна</p>
-            </div>
+            isConvosLoading ? (
+              <div className="flex justify-center py-10">
+                <div className="w-6 h-6 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+              </div>
+            ) : !conversations || conversations.length === 0 ? (
+              <div className="py-16 text-center">
+                <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-600" />
+                <p className="text-gray-500 text-sm">Чат байхгүй байна</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-white/5">
+                {filterBySearch(conversations).map((convo: any) => (
+                  <div
+                    key={convo.username}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 cursor-pointer transition-colors"
+                    onClick={() => setLocation(`/messages/${convo.username}`)}
+                  >
+                    <div className="relative">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={convo.avatarUrl || ""} />
+                        <AvatarFallback className="bg-gray-700 text-gray-300">
+                          {convo.username?.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <div className="font-medium text-white text-sm truncate">
+                          {convo.displayName || convo.username}
+                        </div>
+                        <span className="text-[10px] text-gray-500">
+                          {new Date(convo.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between mt-0.5">
+                        <p className="text-xs text-gray-400 truncate max-w-[85%]">
+                          {convo.lastMessageFromMe ? "Би: " : ""}{convo.lastMessage}
+                        </p>
+                        {convo.unreadCount > 0 && (
+                          <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
+                            {convo.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
           )}
         </div>
       </div>

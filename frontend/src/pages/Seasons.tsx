@@ -19,7 +19,7 @@ export default function Seasons() {
         </div>
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Улирлууд</h1>
         <p className="text-muted-foreground text-lg max-w-2xl">
-          CodeSteppe-ийн түүхэн улирлууд болон аваргуудын жагсаалт. Шинэ улирал бүрт ELO дахин шинэчлэгдэж, шинэ тэмцэл эхэлдэг.
+          CodeBattle-ийн түүхэн улирлууд болон аваргуудын жагсаалт. Шинэ улирал бүрт ELO дахин шинэчлэгдэж, шинэ тэмцэл эхэлдэг.
         </p>
       </div>
 

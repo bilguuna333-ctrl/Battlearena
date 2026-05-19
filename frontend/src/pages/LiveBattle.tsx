@@ -17,6 +17,7 @@ import { getRankColor } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 import { io, Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/api";
 
 export default function LiveBattle() {
   const t = useT();
@@ -99,6 +100,22 @@ export default function LiveBattle() {
     };
   }, [id, user?.id]);
 
+  const handleForfeit = async () => {
+    if (!window.confirm("Та тулааныг орхиж бууж өгөхдөө итгэлтэй байна уу? Орхивол таныг хожигдсонд тооцож, ELO оноо хасагдах болно.")) {
+      return;
+    }
+    try {
+      await apiRequest<any>(`/api/battles/${id}/forfeit`, {
+        method: "POST",
+      });
+      toast.success("Тулааныг цуцалж, бууж өглөө.");
+      queryClient.invalidateQueries({ queryKey: getGetBattleQueryKey(id || "") });
+      queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+    } catch (err: any) {
+      toast.error(err?.message || "Бууж өгөхөд алдаа гарлаа.");
+    }
+  };
+
   const handleSubmit = () => {
     if (!battle || !id) return;
     submitMutation.mutate({
@@ -156,15 +173,27 @@ const formatTime = (seconds: number) => {
               </SelectContent>
             </Select>
           </div>
-          <Button 
-            size="sm" 
-            className="bg-primary hover:bg-primary/90"
-            onClick={handleSubmit}
-            disabled={submitMutation.isPending || battle.state === "finished"}
-          >
-            {submitMutation.isPending ? <div className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin mr-2" /> : <Play className="w-4 h-4 mr-2 fill-current" />}
-            Кодоо илгээх
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="bg-red-950/60 border border-red-500/30 text-red-400 hover:bg-red-900/60 transition-colors"
+              onClick={handleForfeit}
+              disabled={battle.state === "finished"}
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Бууж өгөх
+            </Button>
+            <Button 
+              size="sm" 
+              className="bg-primary hover:bg-primary/90"
+              onClick={handleSubmit}
+              disabled={submitMutation.isPending || battle.state === "finished"}
+            >
+              {submitMutation.isPending ? <div className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin mr-2" /> : <Play className="w-4 h-4 mr-2 fill-current" />}
+              Кодоо илгээх
+            </Button>
+          </div>
         </div>
 
         {/* Code Editor */}

@@ -205,7 +205,7 @@ export default function Register() {
         }
         
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-        toast({ title: "Бүртгэл амжилттай!", description: "CodeSteppe-д тавтай морил!" });
+        toast({ title: "Бүртгэл амжилттай!", description: "CodeBattle-д тавтай морил!" });
         setLocation(`/profile/${formData.username}`);
       },
       onError: (err) => {

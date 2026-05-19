@@ -31,7 +31,7 @@ export function LeftSidebar() {
           </div>
           {/* ELO Level with circular gauge */}
           {(() => {
-            const elo = (user as any).elo || (user as any).rating || 1000;
+            const elo = user.eloRating || 1000;
             const levelInfo = getEloLevel(elo);
             const circumference = 2 * Math.PI * 12;
             const strokeDashoffset = circumference - (levelInfo.progress / 100) * circumference;
@@ -67,9 +67,6 @@ export function LeftSidebar() {
             <BookOpen className="w-4 h-4" /> {t("problems.library")}
           </Button>
         </Link>
-      </div>
-      
-      <div className="space-y-1 mb-6">
         <Link href="/battle">
           <Button variant="ghost" className={`w-full justify-start gap-3 ${location.startsWith('/battle') ? "bg-white/10 text-white font-medium" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>
             <Swords className="w-4 h-4" /> {t("nav.battle")}
@@ -92,7 +89,7 @@ export function LeftSidebar() {
         </Link>
         <Link href="/bosses">
           <Button variant="ghost" className={`w-full justify-start gap-3 ${location.startsWith('/bosses') ? "bg-white/10 text-white font-medium" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>
-            <Flame className="w-4 h-4" /> {t("nav.bosses")}
+            <Flame className="w-4 h-4 text-red-500 animate-pulse" /> {t("nav.bosses")}
           </Button>
         </Link>
       </div>

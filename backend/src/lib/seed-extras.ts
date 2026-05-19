@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 import {
   db,
   bossesTable,
@@ -219,6 +219,39 @@ export async function seedExtras(): Promise<void> {
         icon: "crown",
       },
     ]);
+  }
+
+  const [shadowLord] = await db
+    .select()
+    .from(bossesTable)
+    .where(eq(bossesTable.slug, "code-shadow-lord"));
+  
+  if (!shadowLord) {
+    const [pEasy] = await db.select({ id: problemsTable.id }).from(problemsTable).where(eq(problemsTable.slug, "two-sum-numbers"));
+    const [pMedium] = await db.select({ id: problemsTable.id }).from(problemsTable).where(eq(problemsTable.slug, "fibonacci"));
+    const [pHard] = await db.select({ id: problemsTable.id }).from(problemsTable).where(eq(problemsTable.slug, "max-subarray"));
+
+    const easyId = pEasy?.id ?? 1;
+    const mediumId = pMedium?.id ?? 9;
+    const hardId = pHard?.id ?? 13;
+
+    await db.insert(bossesTable).values({
+      slug: "code-shadow-lord",
+      name: "Сүүдрийн Эзэн (Shadow Lord)",
+      nameEn: "Code Shadow Lord",
+      title: "Сүүдрийн Кодчин",
+      titleEn: "Shadow Coder",
+      description: "3 өөр чадвартай (Skill), тус бүр өөр түвшний бодлоготой тусгай босс. Чадвар 1 (Хялбар), Чадвар 2 (Дунд), Чадвар 3 (Хэцүү).",
+      descriptionEn: "Special boss with 3 skills mapping to different problem difficulties (Easy, Medium, Hard).",
+      difficulty: "Тусгай",
+      maxHp: 1000,
+      problemIds: [easyId, mediumId, hardId],
+      rewardXp: 1500,
+      rewardCoins: 800,
+      rewardTitle: "Сүүдрийг Дарагч",
+      artColor: "red",
+      icon: "skull",
+    });
   }
 
   // Hiring challenges
