@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Send, ArrowLeft } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 
-const SOCKET_URL = "http://localhost:5000";
+import { API_BASE_URL } from "@/lib/api";
+
+const SOCKET_URL = API_BASE_URL;
 
 type ChatMessage = {
   id: number;

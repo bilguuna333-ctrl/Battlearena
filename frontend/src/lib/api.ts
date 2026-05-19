@@ -1,13 +1,13 @@
 // Lightweight fetch helper for endpoints not covered by the auto-generated client.
 // Mirrors the behaviour of `customFetch` in `@workspace/api-client-react`.
 
-const DEFAULT_BASE_URL = "http://localhost:5000";
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function getBaseUrl(): string {
-  if (typeof window === "undefined") return DEFAULT_BASE_URL;
+  if (typeof window === "undefined") return API_BASE_URL;
   return (
     (window as any).__API_BASE_URL__ ||
-    DEFAULT_BASE_URL
+    API_BASE_URL
   );
 }
 

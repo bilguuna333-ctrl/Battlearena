@@ -3,14 +3,14 @@ import { useLocation } from "wouter";
 import { io, Socket } from "socket.io-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
-import { invitationsApi, type Invitation } from "@/lib/api";
+import { invitationsApi, type Invitation, API_BASE_URL } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Swords, X, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 
-const SOCKET_URL = "http://localhost:5000";
+const SOCKET_URL = API_BASE_URL;
 
 export function BattleInviteNotification() {
   const t = useT();

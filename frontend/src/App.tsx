@@ -39,12 +39,14 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_C
 function Router() {
   const [location] = useLocation();
   const isLiveBattle = /^\/battle\/[^/]+$/.test(location);
+  const isAuthPage = location === "/login" || location === "/register";
+  const hideLayout = isLiveBattle || isAuthPage;
 
   return (
     <div className="min-h-screen bg-[#111111] text-gray-300 flex flex-col selection:bg-orange-500/30 font-sans">
-      {!isLiveBattle && <Navbar />}
+      {!hideLayout && <Navbar />}
       <div className="flex-1 flex overflow-x-hidden">
-        {!isLiveBattle && <LeftSidebar />}
+        {!hideLayout && <LeftSidebar />}
         <main className="flex-1 flex flex-col overflow-x-hidden">
         <Switch>
           <Route path="/" component={Home} />

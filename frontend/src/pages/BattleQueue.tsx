@@ -31,10 +31,10 @@ import {
   getGetMeQueryKey,
   getGetQueueStatusQueryKey,
 } from "@workspace/api-client-react";
-import { invitationsApi, lobbyApi, type Invitation, type InvitationsResponse, type Lobby } from "@/lib/api";
+import { invitationsApi, lobbyApi, type Invitation, type InvitationsResponse, type Lobby, API_BASE_URL } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 
-const SOCKET_URL = "http://localhost:5000";
+const SOCKET_URL = API_BASE_URL;
 const INVITATIONS_KEY = ["battle", "invitations"] as const;
 
 function timeRemaining(expiresAt: string): number {

@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Users, UserPlus, MessageCircle, Search, X, User, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { io } from "socket.io-client";
-import { apiRequest } from "@/lib/api";
+import { apiRequest, API_BASE_URL } from "@/lib/api";
 
 type FriendStatus = "playing" | "online" | "offline";
 
@@ -56,7 +56,7 @@ export default function Social() {
   useEffect(() => {
     if (!me?.username || !token) return;
 
-    const socket = io("http://localhost:5000", {
+    const socket = io(API_BASE_URL, {
       transports: ["websocket", "polling"],
       reconnection: true,
     });

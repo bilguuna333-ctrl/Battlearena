@@ -17,7 +17,7 @@ import { getRankColor } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 import { io, Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/api";
+import { apiRequest, API_BASE_URL } from "@/lib/api";
 
 export default function LiveBattle() {
   const t = useT();
@@ -72,7 +72,7 @@ export default function LiveBattle() {
   useEffect(() => {
     if (!id) return undefined;
     
-    const socket = io("http://localhost:5000", {
+    const socket = io(API_BASE_URL, {
       transports: ["websocket", "polling"],
     });
     socketRef.current = socket;

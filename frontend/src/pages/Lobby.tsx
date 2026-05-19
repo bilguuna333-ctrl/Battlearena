@@ -18,10 +18,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
-import { lobbyApi, type Lobby as LobbyType } from "@/lib/api";
+import { lobbyApi, type Lobby as LobbyType, API_BASE_URL } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 
-const SOCKET_URL = "http://localhost:5000";
+const SOCKET_URL = API_BASE_URL;
 
 export default function Lobby() {
   const t = useT();
