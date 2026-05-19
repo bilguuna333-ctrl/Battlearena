@@ -87,3 +87,49 @@ export const replaysTable = pgTable("replays", {
 });
 
 export type Replay = typeof replaysTable.$inferSelect;
+
+export const battleInvitationsTable = pgTable("battle_invitations", {
+  id: text("id").primaryKey(),
+  fromUserId: integer("from_user_id").notNull(),
+  toUserId: integer("to_user_id").notNull(),
+  mode: text("mode").notNull().default("ranked"),
+  status: text("status").notNull().default("pending"),
+  battleId: text("battle_id"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  respondedAt: timestamp("responded_at", { withTimezone: true }),
+});
+
+export type BattleInvitation = typeof battleInvitationsTable.$inferSelect;
+
+export const lobbiesTable = pgTable("lobbies", {
+  id: text("id").primaryKey(),
+  code: text("code").notNull().unique(),
+  hostUserId: integer("host_user_id").notNull(),
+  mode: text("mode").notNull().default("normal"),
+  maxPlayers: integer("max_players").notNull().default(2),
+  problemId: integer("problem_id"),
+  state: text("state").notNull().default("open"),
+  battleId: text("battle_id"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+
+export type Lobby = typeof lobbiesTable.$inferSelect;
+
+export const lobbyMembersTable = pgTable("lobby_members", {
+  id: serial("id").primaryKey(),
+  lobbyId: text("lobby_id").notNull(),
+  userId: integer("user_id").notNull(),
+  isHost: integer("is_host").notNull().default(0),
+  ready: integer("ready").notNull().default(0),
+  joinedAt: timestamp("joined_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type LobbyMember = typeof lobbyMembersTable.$inferSelect;

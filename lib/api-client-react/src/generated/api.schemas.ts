@@ -41,8 +41,10 @@ export interface CurrentUser {
   displayName: string;
   /** @nullable */
   avatarSeed?: string | null;
+  avatarUrl?: string | null;
   /** @nullable */
   bio?: string | null;
+  email?: string | null;
   eloRating: number;
   highestElo: number;
   xp: number;
@@ -107,6 +109,7 @@ export interface UserProfile {
   displayName: string;
   /** @nullable */
   avatarSeed?: string | null;
+  avatarUrl?: string | null;
   /** @nullable */
   bio?: string | null;
   eloRating: number;
@@ -137,6 +140,7 @@ export interface ProblemSummary {
   xpReward: number;
   eloReward: number;
   solvedCount: number;
+  solved?: boolean;
 }
 
 export type ProblemExamplesItem = {
@@ -256,6 +260,7 @@ export interface OpponentSummary {
   displayName: string;
   /** @nullable */
   avatarSeed?: string | null;
+  avatarUrl?: string | null;
   eloRating: number;
   rank: string;
   winRate: number;
@@ -307,6 +312,7 @@ export interface BattleParticipant {
   displayName: string;
   /** @nullable */
   avatarSeed?: string | null;
+  avatarUrl?: string | null;
   eloRating: number;
   rank: string;
   passedTests: number;
@@ -358,7 +364,9 @@ export interface LeaderboardEntry {
   displayName: string;
   /** @nullable */
   avatarSeed?: string | null;
+  avatarUrl?: string | null;
   eloRating: number;
+  xp: number;
   rank: string;
   battleWins: number;
   battleLosses: number;
@@ -406,6 +414,7 @@ export interface ReplayParticipant {
   displayName: string;
   /** @nullable */
   avatarSeed?: string | null;
+  avatarUrl?: string | null;
   eloBefore: number;
   /** @nullable */
   eloAfter: number | null;
@@ -511,6 +520,7 @@ export interface ActivityItem {
   displayName: string;
   /** @nullable */
   avatarSeed?: string | null;
+  avatarUrl?: string | null;
   type: string;
   payload: ActivityItemPayload;
   createdAt: string;
@@ -533,6 +543,7 @@ export interface FriendUser {
   displayName: string;
   /** @nullable */
   avatarSeed?: string | null;
+  avatarUrl?: string | null;
   eloRating: number;
   rank: string;
   /** @nullable */
@@ -562,6 +573,7 @@ export interface GroupMember {
   displayName: string;
   /** @nullable */
   avatarSeed?: string | null;
+  avatarUrl?: string | null;
   eloRating: number;
   rank: string;
   xp: number;
@@ -699,6 +711,7 @@ export interface CandidateEntry {
   displayName: string;
   /** @nullable */
   avatarSeed?: string | null;
+  avatarUrl?: string | null;
   score: number;
   solvedCount: number;
   status: string;
@@ -862,7 +875,16 @@ export type ListProblemsParams = {
 
 export type GetLeaderboardParams = {
   scope?: GetLeaderboardScope;
+  sort?: GetLeaderboardSort;
 };
+
+export type GetLeaderboardSort =
+  (typeof GetLeaderboardSort)[keyof typeof GetLeaderboardSort];
+
+export const GetLeaderboardSort = {
+  elo: "elo",
+  xp: "xp",
+} as const;
 
 export type GetLeaderboardScope =
   (typeof GetLeaderboardScope)[keyof typeof GetLeaderboardScope];

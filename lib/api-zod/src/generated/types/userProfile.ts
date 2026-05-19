@@ -15,6 +15,7 @@ export interface UserProfile {
   displayName: string;
   /** @nullable */
   avatarSeed?: string | null;
+  avatarUrl?: string | null;
   /** @nullable */
   bio?: string | null;
   eloRating: number;

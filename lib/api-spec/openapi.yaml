@@ -344,6 +344,12 @@ paths:
           schema:
             type: string
             enum: [global, weekly, monthly, season]
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [elo, xp]
       responses:
         "200":
           description: OK
@@ -963,7 +969,9 @@ components:
         username: { type: string }
         displayName: { type: string }
         avatarSeed: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
         bio: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
         eloRating: { type: integer }
         highestElo: { type: integer }
         xp: { type: integer }
@@ -1008,6 +1016,7 @@ components:
         username: { type: string }
         displayName: { type: string }
         avatarSeed: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
         bio: { type: ["string", "null"] }
         eloRating: { type: integer }
         highestElo: { type: integer }
@@ -1080,6 +1089,7 @@ components:
         xpReward: { type: integer }
         eloReward: { type: integer }
         solvedCount: { type: integer }
+        solved: { type: boolean }
 
     Problem:
       type: object
@@ -1149,7 +1159,7 @@ components:
         problemSlug: { type: string }
         language:
           type: string
-          enum: [javascript, python]
+          enum: [javascript, typescript, python, cpp]
         code: { type: string }
 
     SubmissionResult:
@@ -1228,6 +1238,7 @@ components:
         username: { type: string }
         displayName: { type: string }
         avatarSeed: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
         eloRating: { type: integer }
         rank: { type: string }
         winRate: { type: number }
@@ -1274,6 +1285,7 @@ components:
         username: { type: string }
         displayName: { type: string }
         avatarSeed: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
         eloRating: { type: integer }
         rank: { type: string }
         passedTests: { type: integer }
@@ -1302,13 +1314,15 @@ components:
 
     LeaderboardEntry:
       type: object
-      required: [position, username, displayName, eloRating, rank, battleWins, battleLosses, winRate, winStreak]
+      required: [position, username, displayName, eloRating, xp, rank, battleWins, battleLosses, winRate, winStreak]
       properties:
         position: { type: integer }
         username: { type: string }
         displayName: { type: string }
         avatarSeed: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
         eloRating: { type: integer }
+        xp: { type: integer }
         rank: { type: string }
         battleWins: { type: integer }
         battleLosses: { type: integer }
@@ -1368,6 +1382,7 @@ components:
         username: { type: string }
         displayName: { type: string }
         avatarSeed: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
         eloBefore: { type: integer }
         eloAfter: { type: ["integer", "null"] }
         finalPassed: { type: integer }
@@ -1450,6 +1465,7 @@ components:
         username: { type: string }
         displayName: { type: string }
         avatarSeed: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
         type: { type: string }
         payload:
           type: object
@@ -1489,6 +1505,7 @@ components:
         username: { type: string }
         displayName: { type: string }
         avatarSeed: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
         eloRating: { type: integer }
         rank: { type: string }
         title: { type: ["string", "null"] }
@@ -1531,6 +1548,7 @@ components:
         username: { type: string }
         displayName: { type: string }
         avatarSeed: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
         eloRating: { type: integer }
         rank: { type: string }
         xp: { type: integer }
@@ -1600,7 +1618,7 @@ components:
         code: { type: string }
         language:
           type: string
-          enum: [javascript, python]
+          enum: [javascript, typescript, python, cpp]
 
     ReviewAssignmentInput:
       type: object
@@ -1657,6 +1675,7 @@ components:
         username: { type: string }
         displayName: { type: string }
         avatarSeed: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"] }
         score: { type: integer }
         solvedCount: { type: integer }
         status: { type: string }
@@ -1738,7 +1757,7 @@ components:
       properties:
         language:
           type: string
-          enum: [javascript, python]
+          enum: [javascript, typescript, python, cpp]
         code: { type: string }
 
     BossAttackResult:

@@ -21,6 +21,8 @@ export type ProblemTestCase = {
 export type ProblemStarter = {
   javascript: string;
   python: string;
+  typescript?: string;
+  cpp?: string;
 };
 
 export const problemsTable = pgTable("problems", {

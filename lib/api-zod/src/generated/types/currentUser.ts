@@ -12,8 +12,10 @@ export interface CurrentUser {
   displayName: string;
   /** @nullable */
   avatarSeed?: string | null;
+  avatarUrl?: string | null;
   /** @nullable */
   bio?: string | null;
+  email?: string | null;
   eloRating: number;
   highestElo: number;
   xp: number;
